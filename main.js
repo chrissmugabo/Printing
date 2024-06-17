@@ -57,7 +57,7 @@ app.on("ready", () => {
   mainWindow = new BrowserWindow({
     width: 1000,
     height: 700,
-    icon: path.join(__dirname, "/assets/logo.png"),
+    icon: path.join(__dirname, "/assets/icons/logo.png"),
   });
 
   mainWindow.setTitle("Printing Service");

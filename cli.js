@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
-const {spawn} = require('child_process')
-const electron = require('electron')
-const path = require('path')
+import { spawn } from "child_process";
+import electron from "electron";
+import path from "path";
 
-const appPath = path.join(__dirname, 'main.js')
-const args = [appPath].concat(process.argv.slice(2))
-const proc = spawn(electron, args, {stdio: 'inherit'})
+const __dirname = path.resolve();
+const appPath = path.join(__dirname, "main.js");
+const args = [appPath].concat(process.argv.slice(2));
+const proc = spawn(electron, args, { stdio: "inherit" });
 
-proc.on('close', (code) => process.exit(code))
+proc.on("close", (code) => process.exit(code));
