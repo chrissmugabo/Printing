@@ -8,7 +8,7 @@ import path from "path";
   return;
 } */
 
-const { app, BrowserWindow, Menu } = electron;
+const { app, BrowserWindow, Menu, ipcMain } = electron;
 const __dirname = path.resolve();
 let menu = Menu.buildFromTemplate([
   {
@@ -53,10 +53,14 @@ let mainWindow;
 
 app.setName("Electron Example");
 
-app.on("ready", () => {
+function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 700,
+    width: 600,
+    height: 400,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    },
     icon: path.join(__dirname, "/assets/icons/logo.png"),
   });
 
@@ -66,4 +70,29 @@ app.on("ready", () => {
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
+
+  // Listen for print event
+  ipcMain.on("print", (event) => {
+    const win = BrowserWindow.getFocusedWindow();
+    win.webContents.print(
+      { silent: true, printBackground: true },
+      (success, errorType) => {
+        if (!success) console.log(errorType);
+      }
+    );
+  });
+}
+
+app.on("ready", createWindow);
+
+app.on("window-all-closed", function () {
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
+});
+
+app.on("activate", function () {
+  if (mainWindow === null) {
+    createWindow();
+  }
 });
