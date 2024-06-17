@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "main": "main.js",
   "bin": "cli.js",
+  "type": "module",
   "scripts": {
-    "start": "electron .",
+    "start": "nodemon --exec electron .",
     "dev": "electron . --debug",
     "test": "mocha && standard",
     "package": "npm-run-all package:*",
@@ -30,7 +31,8 @@
     "node-thermal-printer": "^4.4.2"
   },
   "devDependencies": {
+    "electron-packager": "^17.1.2",
     "electron-winstaller": "^5.3.1",
-    "electron-packager": "^17.1.2"
+    "nodemon": "^3.1.3"
   }
 }
