@@ -58,8 +58,10 @@ function createWindow() {
     width: 600,
     height: 400,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
+      preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      enableRemoteModule: false,
+      nodeIntegration: false,
     },
     icon: path.join(__dirname, "/assets/icons/logo.png"),
   });
@@ -92,7 +94,36 @@ app.on("window-all-closed", function () {
 });
 
 app.on("activate", function () {
-  if (mainWindow === null) {
+  if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
+});
+ipcMain.handle("print-silent", async (event, invoiceHTML) => {
+  const printWindow = new BrowserWindow({ show: false });
+  printWindow.loadURL(
+    `data:text/html;charset=utf-8,${encodeURIComponent(`
+    <html>
+    <head>
+      <title>Print Invoice</title>
+      <style>
+        /* Add any styles you want for the print */
+        body { font-family: Arial, sans-serif; }
+        h2 { text-align: center; }
+      </style>
+    </head>
+    <body>${invoiceHTML}</body>
+    </html>
+  `)}`
+  );
+
+  printWindow.webContents.on("did-finish-load", () => {
+    printWindow.webContents.print(
+      { silent: true, printBackground: true },
+      (success, failureReason) => {
+        if (!success) console.log(failureReason);
+        printWindow.close();
+        console.log("Print Initiated");
+      }
+    );
+  });
 });
