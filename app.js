@@ -1,7 +1,6 @@
-import ipcRenderer from "electron";
-import axios from "axios";
-const { createApp } = Vue;
+import { ipcRenderer } from "electron";
 
+const { createApp } = Vue;
 const printInvoice = (elt) => {
   const invoiceHTML = document.getElementById(elt).innerHTML;
   ipcRenderer.invoke("print-silent", invoiceHTML).then(() => {
