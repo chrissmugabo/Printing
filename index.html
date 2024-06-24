@@ -12,7 +12,7 @@
     <div id="app">
       <div class="container">
         <div class="row">
-          <div class="col-12">
+          <div class="col-12 pt-3">
             <h4>Configure Printing Service</h4>
             <hr />
             <div class="form-group row mb-2 align-items-center">
@@ -31,7 +31,12 @@
               v-if="!branches.length"
             >
               <div class="col-12">
-                <button type="button" class="btn btn-primary" :disabled="!url">
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  @click="setUrl()"
+                  :disabled="!url"
+                >
                   Get Branches
                 </button>
               </div>
@@ -44,6 +49,13 @@
               <div class="col-8">
                 <select class="form-control form-select">
                   <option value="null" hidden disabled>Select Branch</option>
+                  <option
+                    :value="branch.id"
+                    v-for="branch in branches"
+                    :key="branch.id"
+                  >
+                    {{ branch.name }}
+                  </option>
                 </select>
               </div>
             </div>
@@ -51,6 +63,7 @@
         </div>
       </div>
     </div>
+    <script src="assets/js/axios.min.js"></script>
     <script type="module" setup src="app.js"></script>
   </body>
 </html>
