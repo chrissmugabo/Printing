@@ -1,8 +1,8 @@
-import { ipcRenderer } from "electron";
+//import { ipcRenderer } from "electron";
 
 export const printInvoice = (elt) => {
   const invoiceHTML = document.getElementById(elt).innerHTML;
-  ipcRenderer.invoke("print-silent", invoiceHTML).then(() => {
+  window.electron.ipcRenderer.invoke("print-silent", invoiceHTML).then(() => {
     console.log("Print request sent");
   });
 };
@@ -79,6 +79,6 @@ export const helper = {
   },
 
   formatMoney(num) {
-    return `RWF ${formatNumber(num)}`;
+    return `RWF ${this.formatNumber(num)}`;
   },
 };

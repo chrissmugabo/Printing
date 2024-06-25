@@ -1,6 +1,6 @@
 import { ref } from "vue";
 
-const appSettings = ref({});
+const appSettings = ref<any>({});
 export function useLayout() {
   return {
     appSettings,

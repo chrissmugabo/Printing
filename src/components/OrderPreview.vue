@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { helper, printInvoice } from "../utils/helpers.js";
+import { useLayout } from "../hooks/useLayout";
 
-const props = defineProps<any>();
+const props = defineProps<{ round: any; order: any; items: any }>();
+const { appSettings } = useLayout();
 
 const orderTotal = computed(() =>
   props.items.reduce(
@@ -53,15 +55,16 @@ function callback() {
     </div>
     <div
       class="py-1 border-bottom border-dashed"
-      v-if="!helper.empty(order) && !helper.empty(round)"
+      v-if="!helper.empty(props.order) && !helper.empty(props.round)"
     >
       <table class="table table-sm table-borderless mb-1">
         <tr>
           <td colspan="2">
             <p class="mb-0 h6">
               Order NO:
-              <b>#{{ helper.generateVoucherNo(round.round_no) }}</b> &rarr;
-              {{ round.destination }}
+              <b>#{{ helper.generateVoucherNo(props.round.round_no) }}</b>
+              &rarr;
+              {{ props.round.destination }}
             </p>
           </td>
         </tr>
@@ -102,11 +105,11 @@ function callback() {
         </tr>
       </table>
     </div>
-    <div class="py-1 border-bottom border-dashed" v-if="items.length">
+    <div class="py-1 border-bottom border-dashed" v-if="props.items.length">
       <div
         class="border-bottom mb-2"
         v-for="(item, i) in props.items"
-        v-for-callback="{ key: i, array: items, callback: callback() }"
+        v-for-callback="{ key: i, array: props.items, callback: callback() }"
         :key="'order_items' + i"
       >
         <div class="d-flex align-items-center flex-nowrap">

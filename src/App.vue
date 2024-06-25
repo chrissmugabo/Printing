@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import OrderPreview from "./components/OrderPreview.vue";
 import axios from "axios";
+import { useLayout } from "./hooks/useLayout";
 import { ref, computed, onMounted, nextTick, onBeforeMount } from "vue";
 
+const { appSettings } = useLayout();
 const invoice = ref<any>(null);
 const branches = ref<any>([]);
 const url = ref("");
