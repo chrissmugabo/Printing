@@ -1,12 +1,6 @@
-import { ipcRenderer } from "electron";
+import { printInvoice } from "./main";
 
 const { createApp } = Vue;
-const printInvoice = (elt) => {
-  const invoiceHTML = document.getElementById(elt).innerHTML;
-  ipcRenderer.invoke("print-silent", invoiceHTML).then(() => {
-    console.log("Print request sent");
-  });
-};
 
 const globalMixin = {
   data: () => ({

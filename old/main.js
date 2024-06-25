@@ -1,12 +1,16 @@
 //handle setupevents as quickly as possible
 //import { setupEvents } from "./installers/setupEvents";
 import electron from "electron";
+import { ipcRenderer } from "electron";
 import contextMenu from "electron-context-menu";
 import path from "path";
-/*if (setupEvents.handleSquirrelEvent()) {
-  // squirrel event handled and app will exit in 1000ms, so don't do anything else
-  return;
-} */
+
+export const printInvoice = (elt) => {
+  const invoiceHTML = document.getElementById(elt).innerHTML;
+  ipcRenderer.invoke("print-silent", invoiceHTML).then(() => {
+    console.log("Print request sent");
+  });
+};
 
 const { app, BrowserWindow, Menu, ipcMain } = electron;
 const __dirname = path.resolve();
