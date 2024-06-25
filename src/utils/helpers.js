@@ -81,4 +81,16 @@ export const helper = {
   formatMoney(num) {
     return `RWF ${this.formatNumber(num)}`;
   },
+  
+  generateFormData(obj) {
+    const formData = new FormData();
+    for (let key in obj) {
+      if (obj[key] !== null && typeof obj[key] !== "undefined") {
+        if (typeof obj[key] === "object")
+          formData.append(key, JSON.stringify(obj[key]));
+        else formData.append(key, obj[key]);
+      }
+    }
+    return formData;
+  },
 };

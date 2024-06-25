@@ -302,7 +302,7 @@ button:not(:disabled) {
 button:disabled {
   cursor: not-allowed;
 }
-[hidden] {
+[hidden], .d-none {
   display: none;
 }
 @media print {

@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import OrderPreview from "./components/OrderPreview.vue";
 import axios from "axios";
+import OrderPreview from "./components/OrderPreview.vue";
+import PrintingFlag from "./components/PrintingFlag.vue";
 import { useLayout } from "./hooks/useLayout";
 import { ref, computed, onMounted, nextTick, onBeforeMount } from "vue";
+import { helper } from "./utils/helpers";
 
 const { appSettings } = useLayout();
 const invoice = ref<any>(null);
@@ -14,13 +16,12 @@ const roundItems = ref<any>([]);
 const printInterval = ref<any>(null);
 const isFetchingRounds = ref(false);
 const printingToken = ref<any>(null);
-const printingCode = ref<any>(null);
 const placedOrder = ref<any>({});
 const latestPrintedRoundId = ref<any>(null);
 const printedInvoice = ref<any>({});
 const invoiceItems = ref<any>([]);
 const printingContent = ref<any>("ALL");
-
+const choosenBranchId = ref();
 const roundsUrl = computed(() => {
   if (branch.value && printingToken.value) {
     let url = latestPrintedRoundId.value
@@ -39,6 +40,27 @@ onBeforeMount(() => {
   if (_url) {
     url.value = _url;
     const _branch = localStorage.getItem("branch");
+    const keys = [
+      "site_address",
+      "site_name",
+      "currency",
+      "site_logo",
+      "contact_one",
+      "app_phone",
+      "app_email",
+      "app_tin",
+      "momo_code",
+      "airtel_code",
+      "disabled_direct_print",
+    ];
+    axios
+      .post(
+        _url + "/api/pos/frontend/preloaders",
+        helper.generateFormData({ keys })
+      )
+      .then((response) => {
+        appSettings.value = response?.data?.result;
+      });
     if (_branch) {
       branch.value = JSON.parse(_branch);
     } else {
@@ -62,22 +84,17 @@ onMounted(() => {
       latestPrintedRoundId.value = lastPrintedRound;
     }
     setTimeout(() => {
-      const printingTab = localStorage.getItem("__printing_tab");
-      if (!printingTab) {
-        localStorage.setItem(
-          "__printing_tab",
-          Math.random().toString(36).slice(2)
-        );
-        sessionStorage.setItem("isPrinting", "true");
-        const _printingContent = localStorage.getItem("__printing_content");
-        if (_printingContent) {
-          printingContent.value = _printingContent;
-        }
-
-        printInterval.value = setInterval(() => {
-          if (!isFetchingRounds.value && branch.value && roundsUrl.value) {
-            isFetchingRounds.value = true;
-            axios.get(roundsUrl.value).then((response) => {
+      sessionStorage.setItem("isPrinting", "true");
+      const _printingContent = localStorage.getItem("__printing_content");
+      if (_printingContent) {
+        printingContent.value = _printingContent;
+      }
+      printInterval.value = setInterval(() => {
+        if (!isFetchingRounds.value && branch.value && roundsUrl.value) {
+          isFetchingRounds.value = true;
+          axios
+            .get(url.value + "/api/pos/" + roundsUrl.value)
+            .then((response) => {
               isFetchingRounds.value = false;
               if (response.data.status) {
                 const round = response.data.round;
@@ -104,9 +121,8 @@ onMounted(() => {
                 );
               }
             });
-          }
-        }, 6000);
-      }
+        }
+      }, 6000);
     }, 2000);
   });
 });
@@ -117,9 +133,9 @@ function setUrl() {
     branches.value = response.data.branches;
   });
 }
-function setBranch(e: any) {
+function setBranch() {
   const row = branches.value.find(
-    (_branch: any) => _branch.id == e.target.value
+    (_branch: any) => _branch.id == choosenBranchId.value
   );
   if (row) {
     branch.value = row;
@@ -133,7 +149,7 @@ function setBranch(e: any) {
 <template>
   <div class="container">
     <div class="row">
-      <div class="col-12 pt-3">
+      <div class="col-12 pt-3" v-if="!Object.keys(branch).length || !url">
         <h4>Configure Printing Service</h4>
         <hr />
         <div class="form-group row mb-2 align-items-center">
@@ -168,7 +184,7 @@ function setBranch(e: any) {
         >
           <label class="col-4">Branch:</label>
           <div class="col-8">
-            <select class="form-control form-select">
+            <select class="form-control form-select" v-model="choosenBranchId">
               <option value="null" hidden disabled>Select Branch</option>
               <option
                 :value="branch.id"
@@ -180,6 +196,28 @@ function setBranch(e: any) {
             </select>
           </div>
         </div>
+        <div
+          class="form-group row mb-2 align-items-center"
+          v-if="branches.length && choosenBranchId"
+        >
+          <label class="col-4"></label>
+          <div class="col-8">
+            <button type="button" class="btn btn-primary" @click="setBranch">
+              Confirm Settings
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 pt-3 text-center" v-else>
+        <PrintingFlag>
+          <template #action>
+            <div class="text-center">
+              <button class="btn btn-danger mt-3" type="button">
+                Reset Settings
+              </button>
+            </div>
+          </template>
+        </PrintingFlag>
       </div>
     </div>
   </div>
