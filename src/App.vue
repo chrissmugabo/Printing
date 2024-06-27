@@ -73,57 +73,7 @@ onBeforeMount(() => {
 
 onMounted(() => {
   nextTick(() => {
-    let _printingToken = localStorage.getItem("__printing_token");
-    if (!_printingToken) {
-      _printingToken = Math.random().toString(36).slice(2);
-      localStorage.setItem("__printing_token", _printingToken);
-    }
-    printingToken.value = _printingToken;
-    const lastPrintedRound = localStorage.getItem("__last_printed_round");
-    if (lastPrintedRound) {
-      latestPrintedRoundId.value = lastPrintedRound;
-    }
-    setTimeout(() => {
-      sessionStorage.setItem("isPrinting", "true");
-      const _printingContent = localStorage.getItem("__printing_content");
-      if (_printingContent) {
-        printingContent.value = _printingContent;
-      }
-      printInterval.value = setInterval(() => {
-        if (!isFetchingRounds.value && branch.value && roundsUrl.value) {
-          isFetchingRounds.value = true;
-          axios
-            .get(url.value + "/api/pos/" + roundsUrl.value)
-            .then((response) => {
-              isFetchingRounds.value = false;
-              if (response.data.status) {
-                const round = response.data.round;
-                const items = response.data.items;
-                const order = response.data.order;
-                if (round.category == "ORDER") {
-                  printableRound.value = round;
-                  roundItems.value = items;
-                  placedOrder.value = order;
-                } else {
-                  if (Array.isArray(round?.items) && round?.items?.length > 0) {
-                    order.grand_total = round?.items.reduce(
-                      (a: any, b: any) => a + Number(b.amount),
-                      0
-                    );
-                  }
-                  printedInvoice.value = order;
-                  invoiceItems.value = items;
-                }
-                latestPrintedRoundId.value = round.id;
-                localStorage.setItem(
-                  "__last_printed_round",
-                  latestPrintedRoundId.value
-                );
-              }
-            });
-        }
-      }, 6000);
-    }, 2000);
+    fetchInvoices();
   });
 });
 
@@ -140,12 +90,68 @@ function setBranch() {
   if (row) {
     branch.value = row;
     localStorage.setItem("branch", JSON.stringify(row));
+    setTimeout(() => {
+      fetchInvoices();
+    }, 250);
   } else {
     localStorage.removeItem("branch");
   }
 }
-</script>
 
+function fetchInvoices() {
+  let _printingToken = localStorage.getItem("__printing_token");
+  if (!_printingToken) {
+    _printingToken = Math.random().toString(36).slice(2);
+    localStorage.setItem("__printing_token", _printingToken);
+  }
+  printingToken.value = _printingToken;
+  const lastPrintedRound = localStorage.getItem("__last_printed_round");
+  if (lastPrintedRound) {
+    latestPrintedRoundId.value = lastPrintedRound;
+  }
+  setTimeout(() => {
+    sessionStorage.setItem("isPrinting", "true");
+    const _printingContent = localStorage.getItem("__printing_content");
+    if (_printingContent) {
+      printingContent.value = _printingContent;
+    }
+    printInterval.value = setInterval(() => {
+      if (!isFetchingRounds.value && branch.value && roundsUrl.value) {
+        isFetchingRounds.value = true;
+        axios
+          .get(url.value + "/api/pos/" + roundsUrl.value)
+          .then((response) => {
+            isFetchingRounds.value = false;
+            if (response.data.status) {
+              const round = response.data.round;
+              const items = response.data.items;
+              const order = response.data.order;
+              if (round.category == "ORDER") {
+                printableRound.value = round;
+                roundItems.value = items;
+                placedOrder.value = order;
+              } else {
+                if (Array.isArray(round?.items) && round?.items?.length > 0) {
+                  order.grand_total = round?.items.reduce(
+                    (a: any, b: any) => a + Number(b.amount),
+                    0
+                  );
+                }
+                printedInvoice.value = order;
+                invoiceItems.value = items;
+              }
+              latestPrintedRoundId.value = round.id;
+              localStorage.setItem(
+                "__last_printed_round",
+                latestPrintedRoundId.value
+              );
+            }
+          });
+      }
+    }, 6000);
+  }, 2000);
+}
+</script>
 <template>
   <div class="container">
     <div class="row">

@@ -1,9 +1,9 @@
 {
-  "name": "electron-vue-vite",
-  "version": "28.1.0",
+  "name": "printing-service",
+  "version": "1.1.0",
   "main": "dist-electron/main/index.js",
-  "description": "Really simple Electron + Vue + Vite boilerplate.",
-  "author": "草鞋没号 <308487730@qq.com>",
+  "description": "Printing Service for tame apps",
+  "author": "Geekslord Tower <vahlens95@gmail.com>",
   "license": "MIT",
   "private": true,
   "keywords": [
@@ -21,7 +21,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build && electron-builder",
+    "build": "vue-tsc --noEmit && vite build && electron-builder build",
     "preview": "vite preview"
   },
   "devDependencies": {
@@ -33,7 +33,9 @@
     "vite-plugin-electron": "^0.28.4",
     "vite-plugin-electron-renderer": "^0.14.5",
     "vue": "^3.4.21",
-    "vue-tsc": "^2.0.6"
+    "vue-tsc": "^2.0.6",
+    "electron-packager": "^17.1.2",
+    "electron-winstaller": "^5.3.1"
   },
   "dependencies": {
     "axios": "^1.7.2"

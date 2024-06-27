@@ -34,7 +34,7 @@ const vForCallback = {
 };
 
 function callback() {
-  printInvoice("#order-preview");
+  printInvoice("order-preview");
 }
 </script>
 <template>

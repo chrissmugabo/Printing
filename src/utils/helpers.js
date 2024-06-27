@@ -2,7 +2,7 @@
 
 export const printInvoice = (elt) => {
   const invoiceHTML = document.getElementById(elt).innerHTML;
-  window.electron.ipcRenderer.invoke("print-silent", invoiceHTML).then(() => {
+  window.ipcRenderer.invoke("print-silent", invoiceHTML).then(() => {
     console.log("Print request sent");
   });
 };
