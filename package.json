@@ -53,7 +53,7 @@
       "dist-electron"
     ],
     "win": {
-      "icon": "dist/logo.ico",
+      "icon": "dist/icons/win/icon.ico",
       "target": [
         {
           "target": "nsis",
@@ -71,6 +71,7 @@
       "deleteAppDataOnUninstall": false
     },
     "linux": {
+      "icon": "dist/icons",
       "target": "AppImage",
       "artifactName": "${productName}-Linux-${version}.${ext}"
     }
