@@ -123,7 +123,7 @@ ipcMain.handle("open-win", (_, arg) => {
 });
 
 // Listen for print event
-ipcMain.handle("print-silent", (event) => {
+ipcMain.on("print", (event) => {
   const _win = BrowserWindow.getFocusedWindow();
   _win.webContents.print(
     { silent: true, printBackground: true },
@@ -131,4 +131,34 @@ ipcMain.handle("print-silent", (event) => {
       if (!success) console.log(errorType);
     }
   );
+});
+
+ipcMain.handle("print-silent", async (event, invoiceHTML) => {
+  const printWindow = new BrowserWindow({ show: false });
+  printWindow.loadURL(
+    `data:text/html;charset=utf-8,${encodeURIComponent(`
+    <html>
+    <head>
+      <title>Print Invoice</title>
+      <style>
+        /* Add any styles you want for the print */
+        body { font-family: Arial, sans-serif; }
+        h2 { text-align: center; }
+      </style>
+    </head>
+    <body>${invoiceHTML}</body>
+    </html>
+  `)}`
+  );
+
+  printWindow.webContents.on("did-finish-load", () => {
+    printWindow.webContents.print(
+      { silent: true, printBackground: true },
+      (success, failureReason) => {
+        if (!success) console.log(failureReason);
+        printWindow.close();
+        console.log("Print Initiated");
+      }
+    );
+  });
 });
