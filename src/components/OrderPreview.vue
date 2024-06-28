@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { computed } from "vue";
 import { helper, printInvoice } from "../utils/helpers.js";
 import { useLayout } from "../hooks/useLayout";
 
@@ -34,11 +34,13 @@ const vForCallback = {
 };
 
 function callback() {
-  printInvoice("order-preview");
+  if (props?.items?.length) {
+    printInvoice("order-preview");
+  }
 }
 </script>
 <template>
-  <div id="print-container">
+  <div id="print-container" class="fs-5">
     <div class="fs-5 text-center py-1 border-bottom border-dashed">
       <p class="h5 mb-1">
         <b>{{ appSettings?.site_name }} </b>
@@ -53,13 +55,14 @@ function callback() {
       <p class="mb-0 h6">Email:{{ appSettings?.app_email }}</p>
       <p class="mb-0 h6">Address: {{ appSettings?.site_address }}</p>
     </div>
+    <div><p class="fs-5">Tables don't work</p></div>
     <div class="fs-5 py-1 border-bottom border-dashed">
       <p class="mb-0 h6">
-              Order NO:
-              <b>#{{ helper.generateVoucherNo(props?.round?.round_no) }}</b>
-              &rarr;
-              {{ props?.round?.destination }}
-            </p>
+        Order NO:
+        <b>#{{ helper.generateVoucherNo(props?.round?.round_no) }}</b>
+        &rarr;
+        {{ props?.round?.destination }}
+      </p>
       <table class="fs-5 table table-sm table-borderless mb-1">
         <tr>
           <td colspan="2">
@@ -154,7 +157,7 @@ function callback() {
       </div>
     </div>
     <div class="py-1 border-bottom border-dashed">
-      <table class="table table-sm table-borderless mb-0">
+      <table>
         <tr>
           <td><span class="fw-bolder">Grand Total</span></td>
           <td class="text-end text-nowrap">
@@ -162,6 +165,7 @@ function callback() {
           </td>
         </tr>
       </table>
-    </div>
+    </div> 
+    
   </div>
 </template>

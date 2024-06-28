@@ -1,0 +1,194 @@
+import { PosPrinter, PosPrintData, PosPrintOptions } from '@plick/electron-pos-printer';
+
+const options: PosPrintOptions = {
+  preview: false,
+  margin: '0 0 0 0',
+  copies: 1,
+  printerName: 'XP-80C',
+  timeOutPerLine: 400,
+  pageSize: '80mm', // page size
+};
+
+const data: PosPrintData[] = [
+  {
+    type: 'image',
+    url: 'https://randomuser.me/api/portraits/men/43.jpg', // Can be a URL or change the key to "path" if you want to use a local file on disk
+    position: 'center', // position of image: 'left' | 'center' | 'right'
+    width: '160px', // width of image in px; default: auto
+    height: '60px', // width of image in px; default: 50 or '50px'
+  },
+  {
+    type: 'text', // 'text' | 'barCode' | 'qrCode' | 'image' | 'table' | 'divider'
+    value: 'SAMPLE HEADING',
+    style: { fontWeight: '700', textAlign: 'center', fontSize: '24px' },
+  },
+  {
+    type: 'divider', // we could style it using the style property, we can use divider anywhere, except on the table header
+  },
+  {
+    type: 'text',
+    value: 'Secondary text',
+    style: { textDecoration: 'underline', fontSize: '10px', textAlign: 'center', color: 'red' },
+  },
+  {
+    type: 'barCode',
+    value: '023456789010',
+    height: 40, // height of barcode, applicable only to bar and QR codes
+    width: 2, // width of barcode, applicable only to bar and QR codes
+    displayValue: true, // Display value below barcode
+    fontSize: 12,
+  },
+  {
+    type: 'qrCode',
+    value: 'https://www.npmjs.com/package/@plick/electron-pos-printer',
+    height: 65,
+    width: 65,
+    position: 'center',
+    style: { margin: '10 20px 20 20px' },
+  },
+  {
+    type: 'text',
+    value: 'Table 1',
+    style: { fontWeight: '700', textAlign: 'center', fontSize: '24px' },
+  },
+  {
+    type: 'table',
+    // style the table
+    style: { border: '1px solid #ddd', fontFamily: 'sans-serif' },
+    // list of the columns to be rendered in the table header
+    tableHeader: [
+      { type: 'text', value: 'Animal' },
+      { type: 'text', value: 'Count' },
+    ],
+    // multi dimensional array depicting the rows and columns of the table body
+    tableBody: [
+      [
+        { type: 'text', value: 'Cat' },
+        { type: 'text', value: '10' },
+      ],
+      [
+        { type: 'text', value: 'Dog' },
+        { type: 'text', value: '5' },
+      ],
+      [
+        { type: 'text', value: 'Pig' },
+        { type: 'text', value: '7' },
+      ],
+    ],
+    // list of rows to be rendered in the table footer
+    tableFooter: [
+      [
+        { type: 'text', value: 'Subtotal' },
+        { type: 'text', value: '22' },
+      ],
+      [
+        { type: 'text', value: 'Total' },
+        { type: 'text', value: '22' },
+      ],
+    ],
+    // custom style for the table header
+    tableHeaderStyle: { backgroundColor: '#000', color: 'white' },
+    // custom style for the table body
+    tableBodyStyle: { border: '0.5px solid #ddd' },
+    // custom style for the table footer
+    tableFooterStyle: { backgroundColor: '#000', color: 'white' },
+    // custom style for the header cells
+    tableHeaderCellStyle: {
+      padding: '2px 2px',
+    },
+    // custom style for the body cells
+    tableBodyCellStyle: {
+      padding: '10px 2px',
+    },
+    // custom style for the footer cells
+    tableFooterCellStyle: {
+      padding: '5px 2px',
+      fontWeight: '400',
+    },
+  },
+  {
+    type: 'text',
+    value: 'Table 2',
+    style: { fontWeight: '700', textAlign: 'center', fontSize: '24px' },
+  },
+  {
+    type: 'table',
+    style: { border: '1px solid #000' }, // style the table
+    // list of the columns to be rendered in the table header
+    tableHeader: [
+      { type: 'text', value: 'People' },
+      { type: 'text', value: 'Image' },
+    ],
+    // multi-dimensional array depicting the rows and columns of the table body
+    tableBody: [
+      [
+        { type: 'text', value: 'Marcus' },
+        { type: 'image', url: 'https://randomuser.me/api/portraits/men/43.jpg', position: 'center' },
+      ],
+      [
+        {
+          type: 'divider',
+        },
+      ],
+      [
+        { type: 'text', value: 'Boris' },
+        { type: 'image', url: 'https://randomuser.me/api/portraits/men/41.jpg', position: 'center' },
+      ],
+      [
+        {
+          type: 'divider',
+        },
+      ],
+      [
+        { type: 'text', value: 'Andrew' },
+        { type: 'image', url: 'https://randomuser.me/api/portraits/men/23.jpg', position: 'center' },
+      ],
+      [
+        {
+          type: 'divider',
+        },
+      ],
+      [
+        { type: 'text', value: 'Tyresse' },
+        { type: 'image', url: 'https://randomuser.me/api/portraits/men/53.jpg', position: 'center' },
+      ],
+      [
+        {
+          type: 'divider',
+        },
+      ],
+    ],
+    // list of rows to be rendered in the table footer
+    tableFooter: [
+      [
+        { type: 'text', value: 'People' },
+        { type: 'text', value: 'Image' },
+      ],
+    ],
+    // custom style for the table header
+    tableHeaderStyle: { backgroundColor: 'red', color: 'white' },
+    // custom style for the table body
+    tableBodyStyle: { border: '0.5px solid #000' },
+    // custom style for the table footer
+    tableFooterStyle: { backgroundColor: '#000', color: 'white' },
+    // custom style for the header cells
+    tableHeaderCellStyle: {
+      padding: '5px 2px',
+    },
+    // custom style for the body cells
+    tableBodyCellStyle: {
+      padding: '1px 2px',
+    },
+    // custom style for the footer cells
+    tableFooterCellStyle: {
+      padding: '2px 2px',
+      fontWeight: '400',
+    },
+  },
+];
+
+PosPrinter.print(data, options)
+  .then(console.log)
+  .catch((error) => {
+    console.error(error);
+  });
