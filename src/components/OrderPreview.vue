@@ -53,18 +53,21 @@ function callback() {
       <p class="mb-0 h6">Email:{{ appSettings?.app_email }}</p>
       <p class="mb-0 h6">Address: {{ appSettings?.site_address }}</p>
     </div>
-    <div
-      class="py-1 border-bottom border-dashed"
-      v-if="!helper.empty(props.order) && !helper.empty(props.round)"
-    >
-      <table class="table table-sm table-borderless mb-1">
+    <div class="fs-5 py-1 border-bottom border-dashed">
+      <p class="mb-0 h6">
+              Order NO:
+              <b>#{{ helper.generateVoucherNo(props?.round?.round_no) }}</b>
+              &rarr;
+              {{ props?.round?.destination }}
+            </p>
+      <table class="fs-5 table table-sm table-borderless mb-1">
         <tr>
           <td colspan="2">
             <p class="mb-0 h6">
               Order NO:
-              <b>#{{ helper.generateVoucherNo(props.round.round_no) }}</b>
+              <b>#{{ helper.generateVoucherNo(props?.round?.round_no) }}</b>
               &rarr;
-              {{ props.round.destination }}
+              {{ props?.round?.destination }}
             </p>
           </td>
         </tr>
@@ -81,34 +84,34 @@ function callback() {
             <p class="mb-0 h6">
               Served By:
               <b>{{
-                props.order?.waiter?.last_name || props.order?.waiter?.name
+                props?.order?.waiter?.last_name || props?.order?.waiter?.name
               }}</b>
             </p>
           </td>
           <td class="text-end text-nowrap">
             <p class="mb-0 h6">
-              Table No: <b>{{ props.order?.table?.name }}</b>
+              Table No: <b>{{ props?.order?.table?.name }}</b>
             </p>
           </td>
         </tr>
         <tr>
           <td>
             <p class="mb-0 h6">
-              Date: <b>{{ helper.formatDate(props.order?.order_date) }}</b>
+              Date: <b>{{ helper.formatDate(props?.order?.order_date) }}</b>
             </p>
           </td>
           <td class="text-end text-nowrap">
             <p class="mb-0 h6">
-              <b>{{ helper.formatTime(props.order?.order_date) }}</b>
+              <b>{{ helper.formatTime(props?.order?.order_date) }}</b>
             </p>
           </td>
         </tr>
       </table>
     </div>
-    <div class="py-1 border-bottom border-dashed" v-if="props.items.length">
+    <div class="py-1 border-bottom border-dashed" v-if="props?.items?.length">
       <div
         class="border-bottom mb-2"
-        v-for="(item, i) in props.items"
+        v-for="(item, i) in props?.items"
         v-for-callback="{ key: i, array: props.items, callback: callback() }"
         :key="'order_items' + i"
       >

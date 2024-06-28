@@ -1,10 +1,13 @@
 //import { ipcRenderer } from "electron";
 
-export const printInvoice = (elt) => {
-  const invoiceHTML = document.getElementById(elt).innerHTML;
-  window.ipcRenderer.invoke("print-silent", invoiceHTML).then(() => {
-    console.log("Print request sent");
-  });
+export const printInvoice = (id) => {
+  const elt = document.getElementById(id);
+  if (elt) {
+    const invoiceHTML = elt.innerHTML;
+    window.ipcRenderer.invoke("print-silent", invoiceHTML).then(() => {
+      console.log("Print request sent");
+    });
+  }
 };
 
 export const helper = {
@@ -62,11 +65,13 @@ export const helper = {
       .slice(0, 5);
   },
   generateVoucherNo(no) {
-    let len = no.toString().length;
-    if (len >= 4) return no;
-    if (len == 1) return `000${no}`;
-    if (len == 2) return `00${no}`;
-    if (len == 3) return `0${no}`;
+    if (no) {
+      let len = no.toString().length;
+      if (len >= 4) return no;
+      if (len == 1) return `000${no}`;
+      if (len == 2) return `00${no}`;
+      if (len == 3) return `0${no}`;
+    }
   },
 
   padNumber(number, targetedLength = 5) {
@@ -81,7 +86,7 @@ export const helper = {
   formatMoney(num) {
     return `RWF ${this.formatNumber(num)}`;
   },
-  
+
   generateFormData(obj) {
     const formData = new FormData();
     for (let key in obj) {
