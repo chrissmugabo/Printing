@@ -1,4 +1,5 @@
 import { app, BrowserWindow, shell, ipcMain } from "electron";
+import PosPrinter from "@plick/electron-pos-printer";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -115,8 +116,27 @@ ipcMain.on("print", (event) => {
   );
 });
 
-ipcMain.handle("print-silent", async (event, invoiceHTML) => {
-  const printWindow = new BrowserWindow({
+ipcMain.handle("print-silent", async (event, data) => {
+  const printOptions: any = {
+    preview: false,
+    margin: "0 0 0 0",
+    copies: 1,
+    printerName: "XP-80",
+    timeOutPerLine: 400,
+    //pageSize: "80mm", // page size
+    silent: true,
+    pageSize: {
+      width: 72.1, // Width in millimeters for 80mm paper
+      height: "auto", // Set height to auto to adjust based on content length
+    },
+  };
+  PosPrinter.PosPrinter.print(data, printOptions)
+    .then(console.log)
+    .catch((error) => {
+      console.error(error);
+    });
+
+  /*const printWindow = new BrowserWindow({
     show: false,
     webPreferences: {
       nodeIntegration: true,
@@ -150,5 +170,5 @@ ipcMain.handle("print-silent", async (event, invoiceHTML) => {
         console.log("Print Initiated");
       }
     );
-  });
+  }); */
 });

@@ -1,13 +1,16 @@
 //import { ipcRenderer } from "electron";
 
 export const printInvoice = (id) => {
-  const elt = document.getElementById(id);
+  window.ipcRenderer.invoke("print-silent", testData).then(() => {
+    console.log("Print Tested");
+  });
+  /* const elt = document.getElementById(id);
   if (elt) {
     const invoiceHTML = elt.innerHTML;
     window.ipcRenderer.invoke("print-silent", invoiceHTML).then(() => {
       console.log("Print request sent");
     });
-  }
+  } */
 };
 
 export const helper = {
@@ -99,3 +102,73 @@ export const helper = {
     return formData;
   },
 };
+
+export const testData = [
+  {
+    type: "text", // 'text' | 'barCode' | 'qrCode' | 'image' | 'table' | 'divider'
+    value: "SAMPLE HEADING",
+    style: { fontWeight: "700", textAlign: "center", fontSize: "14px" },
+  },
+  {
+    type: "divider", // we could style it using the style property, we can use divider anywhere, except on the table header
+  },
+  {
+    type: "text",
+    value: "Secondary text",
+    style: {
+      textDecoration: "underline",
+      fontSize: "10px",
+      textAlign: "center",
+      color: "red",
+    },
+  },
+  {
+    type: "text",
+    value: "Table 1",
+    style: { fontWeight: "700", textAlign: "center", fontSize: "14px" },
+  },
+  {
+    type: "table",
+    // style the table
+    style: { border: "1px solid #ddd", fontFamily: "sans-serif" },
+    // list of the columns to be rendered in the table header
+    tableHeader: ['Animal', 'Age'],
+        // multi dimensional array depicting the rows and columns of the table body
+        tableBody: [
+            ['Cat', 2],
+            ['Dog', 4],
+            ['Horse', 12],
+            ['Pig', 4],
+        ],
+    // list of rows to be rendered in the table footer
+    tableFooter: [
+      [
+        { type: "text", value: "Subtotal" },
+        { type: "text", value: "22" },
+      ],
+      [
+        { type: "text", value: "Total" },
+        { type: "text", value: "22" },
+      ],
+    ],
+    // custom style for the table header
+    tableHeaderStyle: { backgroundColor: "#000", color: "white" },
+    // custom style for the table body
+    tableBodyStyle: { border: "0.5px solid #ddd" },
+    // custom style for the table footer
+    tableFooterStyle: { backgroundColor: "#000", color: "white" },
+    // custom style for the header cells
+    tableHeaderCellStyle: {
+      padding: "2px 2px",
+    },
+    // custom style for the body cells
+    tableBodyCellStyle: {
+      padding: "10px 2px",
+    },
+    // custom style for the footer cells
+    tableFooterCellStyle: {
+      padding: "5px 2px",
+      fontWeight: "400",
+    },
+  },
+];
