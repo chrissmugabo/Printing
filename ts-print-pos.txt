@@ -192,3 +192,87 @@ PosPrinter.print(data, options)
   .catch((error) => {
     console.error(error);
   });
+
+-----------------------------------------------------------
+
+
+
+
+const { app, BrowserWindow, ipcMain } = require('electron');
+const path = require('path');
+const fs = require('fs');
+
+let mainWindow;
+let printWindow;
+
+function createWindow () {
+  mainWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    }
+  });
+
+  // Load the HTML file
+  mainWindow.loadFile('index.html');
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    // Export to PDF
+    mainWindow.webContents.printToPDF({}).then(data => {
+      const pdfDir = path.join(__dirname, 'pdfs');
+
+      // Create the directory if it doesn't exist
+      if (!fs.existsSync(pdfDir)) {
+        fs.mkdirSync(pdfDir);
+      }
+
+      const pdfPath = path.join(pdfDir, 'output.pdf');
+      fs.writeFile(pdfPath, data, (error) => {
+        if (error) throw error;
+        console.log(`Wrote PDF successfully to ${pdfPath}`);
+
+        // Load the PDF in a new BrowserWindow for printing
+        printWindow = new BrowserWindow({ show: false });
+        printWindow.loadURL(`file://${pdfPath}`);
+
+        // Ensure the PDF is fully loaded before printing
+        printWindow.webContents.on('did-finish-load', () => {
+          console.log('PDF loaded, preparing to print...');
+          setTimeout(() => {
+            printWindow.webContents.print({ silent: true }, (success, errorType) => {
+              if (!success) console.log(`Print failed: ${errorType}`);
+              printWindow.close();
+            });
+          }, 1000); // Add a delay to ensure content is fully rendered
+        });
+
+        // Log any loading errors
+        printWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+          console.error(`Failed to load PDF: ${errorDescription}`);
+        });
+      });
+    }).catch(error => {
+      console.log(`Failed to write PDF: `, error);
+    });
+  });
+
+  mainWindow.on('closed', function () {
+    mainWindow = null;
+  });
+}
+
+app.on('ready', createWindow);
+
+app.on('window-all-closed', function () {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+app.on('activate', function () {
+  if (mainWindow === null) {
+    createWindow();
+  }
+});

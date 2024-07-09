@@ -178,7 +178,7 @@ function fetchInvoices() {
     if (_printingContent) {
       printingContent.value = _printingContent;
     }
-    // printInterval.value = setInterval(() => {
+    printInterval.value = setInterval(() => {
     if (!isFetchingRounds.value && branch.value && roundsUrl.value) {
       isFetchingRounds.value = true;
       axios.get(url.value + "/api/pos/" + roundsUrl.value).then((response) => {
@@ -209,7 +209,7 @@ function fetchInvoices() {
         }
       });
     }
-    //}, 6000);
+    }, 6000);
     // End of interval
   }, 2000);
 }
