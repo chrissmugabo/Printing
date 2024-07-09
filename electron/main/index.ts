@@ -1,11 +1,11 @@
 import { app, BrowserWindow, shell, ipcMain } from "electron";
-import { createRequire } from "node:module";
+//import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import os from "node:os";
-import fs from "node:fs";
+//import fs from "node:fs";
 
-const require = createRequire(import.meta.url);
+//const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 process.env.APP_ROOT = path.join(__dirname, "../..");
@@ -140,9 +140,8 @@ ipcMain.handle("print-silent", async (event, invoiceHTML, printerName) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
        <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
       <title>Print Invoice</title>
-      <style>
-      *,::after,::before{-webkit-box-sizing:border-box;box-sizing:border-box; font-family:system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif,
-          "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"}.h5,.h6{margin-top:0;margin-bottom:.5rem;font-weight:500;line-height:1.2}.h5{font-size:1.125rem}.h6,span{font-size:.725rem}b{font-weight:700}table{caption-side:bottom;border-collapse:collapse}td,tr{border-color:inherit;border-style:solid;border-width:0}.table{width:100%;margin-bottom:1rem;color:#495057;vertical-align:top;border-color:#eff0f2}.table>:not(caption)>*>*{padding:.25rem .25rem;border-bottom-width:.5px}.table-sm>:not(caption)>*>*{padding:.05rem .05rem}.table-borderless>:not(caption)>*>*{border-bottom-width:0}.table-borderless>:not(:first-child){border-top-width:0}.border-bottom{border-bottom:.5px solid #444!important}.mb-0{margin-bottom:0!important}.mb-1{margin-bottom:0.25rem!important}.px-1{padding-right:0.25rem!important;padding-left:0.25rem!important}.py-1{padding-top:0.25rem!important;padding-bottom:0.25rem!important}.fs-5{font-size:1.125rem!important}.fw-bolder{font-weight:bolder!important}.text-end{text-align:right!important}.text-center{text-align:center!important}.text-nowrap{white-space:nowrap!important}.table{border-color:#ecf1f4!important;color:#000!important}.table td{vertical-align:middle}.border-dashed{border-bottom-style:dashed!important}.receipt-body{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;padding:1rem 1rem;overflow-y:auto}#print-container,.bill-container{font-family:system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol"}#print-container,.bill-container{display:block!important}@page{margin:.1cm .1cm .1cm}@page:first{margin-top:.2cm};*{print-color-adjust:exact;-webkit-print-color-adjust:exact}ul{padding-left:2rem}ul{margin-top:0;margin-bottom:1rem}ul ul{margin-bottom:0}.d-flex{display:flex!important}.flex-nowrap{flex-wrap:nowrap!important}.align-items-center{align-items:center!important}.my-1{margin-top:0.25rem!important;margin-bottom:0.25rem!important}.me-3{margin-right:1rem!important}.mb-0{margin-bottom:0!important}.mb-2{margin-bottom:0.5rem!important}.ms-auto{margin-left:auto!important}.p-2{padding:0.5rem!important}.px-3{padding-right:1rem!important;padding-left:1rem!important}.py-0{padding-top:0!important;padding-bottom:0!important}.py-2{padding-top:0.5rem!important;padding-bottom:0.5rem!important}.py-4{padding-top:1.5rem!important;padding-bottom:1.5rem!important}.ps-1{padding-left:0.25rem!important}.fw-normal{font-weight:400!important}.fw-bold{font-weight:700!important}.fw-bolder{font-weight:bolder!important}.text-dark{color:#000!important}ul{list-style:none;margin:0;padding:0}.widget-categories ul{margin:0;padding:0;list-style:none}.widget-categories ul>li{position:relative;padding-left:1rem}.widget-categories ul>li>a{display:block;position:relative;-webkit-transition:color 0.25s ease-in-out;transition:color 0.25s ease-in-out;color:rgb(0 0 0 / .65);font-weight:600}.widget-categories ul>li>a:hover{color:rgb(0 0 0 / .9);text-decoration:none}.widget-categories>ul>li{margin-bottom:.5rem;padding-left:1.25rem}.widget-categories .has-children ul{padding-top:.75rem;padding-bottom:.125rem;border-left:1px solid #888}.widget-categories .has-children ul>li{margin-bottom:.1rem}.widget-categories .has-children ul>li span{font-weight:500}.widget-categories .has-children ul>li>a::before{display:block;position:absolute;top:50%;left:-1rem;width:.5rem;height:.0625rem;margin-top:-.0625rem;background-color:#dfdfdf;content:""}.text-foggy{color:#555!important}a{text-decoration:none!important}.d-block{display:block!important}
+      <style> 
+      *,::after,::before{-webkit-box-sizing:border-box;box-sizing:border-box}@page{page-break-after:always;margin:0;padding:1cm;width:100%;height:100%;box-sizing:border-box}body{margin:0;padding:1cm}h1,h2,h3,h4,h5,h6{page-break-after:avoid}.h5,.h6{margin-top:0;margin-bottom:.5rem;font-family:Roboto,sans-serif;font-weight:500;line-height:1.2}.h5{font-size:1.125rem}.h6,span{font-size:.725rem}b{font-weight:700}table{width:100%;border-collapse:collapse}td,tr{border-color:inherit;border-style:solid;border-width:0}.table{width:100%;margin-bottom:1rem;color:#1111;vertical-align:top;border-color:#eff0f2}.table>:not(caption)>*>*{padding:.25rem .25rem;border-bottom-width:.5px}.table-sm>:not(caption)>*>*{padding:.05rem .05rem}.table-borderless>:not(caption)>*>*{border-bottom-width:0}.table-borderless>:not(:first-child){border-top-width:0}.mb-0{margin-bottom:0!important}.mb-1{margin-bottom:0.25rem!important}.px-1{padding-right:0.25rem!important;padding-left:0.25rem!important}.py-1{padding-top:0.25rem!important;padding-bottom:0.25rem!important}.fs-5{font-size:1.125rem!important}.fw-bolder{font-weight:bolder!important}.text-end{text-align:right!important}.text-center{text-align:center!important}.text-nowrap{white-space:nowrap!important}.table{border-color:#ecf1f4!important;color:#000!important}.table td{vertical-align:middle}.border-dashed{border-bottom-style:dashed!important}.receipt-body{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;padding:1rem 1rem;overflow-y:auto}#print-container,.bill-container{font-family:system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol"}#print-container,.bill-container{display:block!important}*{print-color-adjust:exact;-webkit-print-color-adjust:exact}ul{padding-left:2rem}ul{margin-top:0;margin-bottom:1rem}ul ul{margin-bottom:0}.d-flex{display:flex!important}.flex-nowrap{flex-wrap:nowrap!important}.align-items-center{align-items:center!important}.my-1{margin-top:0.25rem!important;margin-bottom:0.25rem!important}.me-3{margin-right:1rem!important}.mb-0{margin-bottom:0!important}.mb-2{margin-bottom:0.5rem!important}.ms-auto{margin-left:auto!important}.p-2{padding:0.5rem!important}.px-3{padding-right:1rem!important;padding-left:1rem!important}.py-0{padding-top:0!important;padding-bottom:0!important}.py-2{padding-top:0.5rem!important;padding-bottom:0.5rem!important}.py-4{padding-top:1.5rem!important;padding-bottom:1.5rem!important}.ps-1{padding-left:0.25rem!important}.fw-normal{font-weight:400!important}.fw-bold{font-weight:700!important}.fw-bolder{font-weight:bolder!important}.text-dark{color:#000!important}ul{list-style:none;margin:0;padding:0}.widget-categories ul{margin:0;padding:0;list-style:none}.widget-categories ul>li{position:relative;padding-left:1rem}.widget-categories ul>li>a{display:block;position:relative;-webkit-transition:color 0.25s ease-in-out;transition:color 0.25s ease-in-out;color:rgb(0 0 0 / .65);font-weight:600}.widget-categories ul>li>a:hover{color:rgb(0 0 0 / .9);text-decoration:none}.widget-categories>ul>li{margin-bottom:.5rem;padding-left:1.25rem}.widget-categories .has-children ul{padding-top:.75rem;padding-bottom:.125rem;border-left:1px solid #888}.widget-categories .has-children ul>li{margin-bottom:.1rem}.widget-categories .has-children ul>li span{font-weight:500}.widget-categories .has-children ul>li>a::before{display:block;position:absolute;top:50%;left:-1rem;width:.5rem;height:.0625rem;margin-top:-.0625rem;background-color:#dfdfdf;content:""}.text-foggy{color:#1111!important}a{text-decoration:none!important}.d-block{display:block!important}
       </style>
     </head>
     <body>${invoiceHTML}</body>
@@ -151,8 +150,21 @@ ipcMain.handle("print-silent", async (event, invoiceHTML, printerName) => {
   );
 
   printWindow.webContents.on("did-finish-load", () => {
+    const desiredWidthMm = 88;
+    const a4WidthMm = 210; // A4 paper width in millimeters
+    const scalingFactor = desiredWidthMm / a4WidthMm;
+
     printWindow.webContents.print(
-      { deviceName: printerName, silent: true, printBackground: true },
+      {
+        deviceName: printerName,
+        silent: true,
+        printBackground: true,
+        //pageSize: { width: 88000, height: 0 },
+        margins: { marginType: "none" },
+        landscape: false,
+        copies: 1,
+        scaleFactor: scalingFactor,
+      },
       (success, failureReason) => {
         console.log(printerName);
         if (!success) console.log(failureReason);

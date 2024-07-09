@@ -33,7 +33,7 @@ function callback() {
 }
 </script>
 <template>
-  <div class="bill-container">
+  <div class="bill-container fs-5">
     <div class="fs-5 text-center py-1 border-bottom border-dashed">
       <p class="h5 mb-1">
         <b>{{ appSettings?.site_name }} </b>
@@ -48,13 +48,13 @@ function callback() {
       <p class="mb-0 h6">Email:{{ appSettings?.app_email }}</p>
       <p class="mb-0 h6">Address: {{ appSettings?.site_address }}</p>
     </div>
-    <div class="py-1 border-bottom border-dashed" v-if="!$helper.empty(order)">
+    <div class="py-1 border-bottom border-dashed" v-if="!helper.empty(order)">
       <table class="table table-sm table-borderless mb-1">
         <tr>
           <td colspan="2">
             <span class=""
               >INVOICE #:
-              <b>{{ $helper.generateVoucherNo(props.order?.id) }}</b></span
+              <b>{{ helper.generateVoucherNo(props.order?.id) }}</b></span
             >
           </td>
         </tr>
@@ -87,12 +87,12 @@ function callback() {
           <td>
             <span
               >Date:
-              <b>{{ $helper.formatDate(props.order?.order_date) }}</b></span
+              <b>{{ helper.formatDate(props.order?.order_date) }}</b></span
             >
           </td>
           <td class="text-end text-nowrap">
             <span
-              ><b>{{ $helper.formatTime(props.order?.order_date) }}</b></span
+              ><b>{{ helper.formatTime(props.order?.order_date) }}</b></span
             >
           </td>
         </tr>
@@ -110,12 +110,11 @@ function callback() {
           </td>
           <td>
             <span
-              >{{ item.quantity }} x
-              {{ $helper.formatNumber(item.price) }}</span
+              >{{ item.quantity }} x {{ helper.formatNumber(item.price) }}</span
             >
           </td>
           <td class="text-end text-nowrap">
-            <span>{{ $helper.formatNumber(item.amount) }}</span>
+            <span>{{ helper.formatNumber(item.amount) }}</span>
           </td>
         </tr>
       </table>
@@ -127,7 +126,7 @@ function callback() {
           <td><span class="fw-bolder">Grand Total</span></td>
           <td class="text-end text-nowrap">
             <span class="h6 mb-0">{{
-              $helper.formatMoney(props.order?.grand_total)
+              helper.formatMoney(props.order?.grand_total)
             }}</span>
           </td>
         </tr>
