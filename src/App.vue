@@ -322,4 +322,10 @@ function resetSettings() {
       />
     </div>
   </div>
+
+  <div class="d-none">
+    <div id="invoice-preview">
+      <InvoicePreview :order="printedInvoice" :items="invoiceItems" />
+    </div>
+  </div>
 </template>
