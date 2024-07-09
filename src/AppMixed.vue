@@ -4,7 +4,7 @@ import OrderPreview from "./components/OrderPreview.vue";
 import PrintingFlag from "./components/PrintingFlag.vue";
 import { useLayout } from "./hooks/useLayout";
 import { ref, computed, onMounted, nextTick, onBeforeMount } from "vue";
-import { helper } from "./utils/helpers";
+import { helper, printInvoice } from "./utils/helpers";
 
 const { appSettings } = useLayout();
 const invoice = ref<any>(null);
@@ -135,6 +135,7 @@ onBeforeMount(() => {
 
 onMounted(() => {
   nextTick(() => {
+    //printInvoice();
     fetchInvoices();
   });
 });

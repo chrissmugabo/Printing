@@ -144,44 +144,6 @@ ipcMain.handle("print-silent", async (event, invoiceHTML) => {
   );
 
   printWindow.webContents.on("did-finish-load", () => {
-    
-    // Print with PDF
-    /*const pdfDir = path.join(__dirname, "pdfs");
-    if (!fs.existsSync(pdfDir)) {
-      fs.mkdirSync(pdfDir);
-    }
-
-    printWindow.webContents.printToPDF({}).then((data) => {
-      const filename = Math.random().toString(36).substr(2);
-      const pdfPath = path.join(pdfDir, `${filename}.pdf`);
-      fs.writeFile(pdfPath, data, (error) => {
-        if (error) throw error;
-        console.log(`Wrote PDF successfully to ${pdfPath}`);
-
-        const _printWin = new BrowserWindow({ show: false });
-        _printWin.loadURL(`file://${pdfPath}`);
-
-        _printWin.webContents.on("did-finish-load", () => {
-          console.log("PDF loaded, preparing to print...");
-          setTimeout(() => {
-            _printWin.webContents.print(
-              { silent: true },
-              (success, errorType) => {
-                if (!success) console.log(`Print failed: ${errorType}`);
-                _printWin.close();
-              }
-            );
-          }, 1000);
-        });
-        _printWin.webContents.on(
-          "did-fail-load",
-          (event, errorCode, errorDescription) => {
-            console.error(`Failed to load PDF: ${errorDescription}`);
-          }
-        );
-      });
-    }); */
-
     printWindow.webContents.print(
       { silent: true, printBackground: true },
       (success, failureReason) => {
@@ -189,6 +151,6 @@ ipcMain.handle("print-silent", async (event, invoiceHTML) => {
         printWindow.close();
         console.log("Print Initiated");
       }
-    ); 
+    );
   });
 });
