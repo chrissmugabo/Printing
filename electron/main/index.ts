@@ -105,6 +105,13 @@ ipcMain.handle("open-win", (_, arg) => {
   }
 });
 
+// Handle getPrinters event from renderer process
+ipcMain.on("getPrinters", (event) => {
+  win.webContents.getPrintersAsync().then((printers) => {
+    event.reply("printersList", printers);
+  });
+});
+
 // Listen for print event
 ipcMain.on("print", (event) => {
   const _win = BrowserWindow.getFocusedWindow();
@@ -116,7 +123,7 @@ ipcMain.on("print", (event) => {
   );
 });
 
-ipcMain.handle("print-silent", async (event, invoiceHTML) => {
+ipcMain.handle("print-silent", async (event, invoiceHTML, printerName) => {
   const printWindow = new BrowserWindow({
     show: false,
     webPreferences: {
@@ -145,8 +152,9 @@ ipcMain.handle("print-silent", async (event, invoiceHTML) => {
 
   printWindow.webContents.on("did-finish-load", () => {
     printWindow.webContents.print(
-      { silent: true, printBackground: true },
+      { deviceName: printerName, silent: true, printBackground: true },
       (success, failureReason) => {
+        console.log(printerName);
         if (!success) console.log(failureReason);
         printWindow.close();
         console.log("Print Initiated");

@@ -1,13 +1,9 @@
-//import { ipcRenderer } from "electron";
-
 export const printInvoice = (id) => {
-  /*window.ipcRenderer.invoke("print-silent", testData).then(() => {
-    console.log("Print Tested");
-  }); */
   const elt = document.getElementById(id);
-  if (elt) {
+  const _printer = localStorage.getItem("printer");
+  if (elt && _printer) {
     const invoiceHTML = elt.innerHTML;
-    window.ipcRenderer.invoke("print-silent", invoiceHTML).then(() => {
+    window.ipcRenderer.invoke("print-silent", invoiceHTML, _printer).then(() => {
       console.log("Print request sent");
     });
   }

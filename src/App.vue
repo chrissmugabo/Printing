@@ -8,6 +8,8 @@ import { helper } from "./utils/helpers";
 
 const { appSettings } = useLayout();
 const invoice = ref<any>(null);
+const printers = ref<Electron.PrinterInfo[]>([]);
+const selectedPrinter = ref("");
 const branches = ref<any>([]);
 const url = ref("");
 const branch = ref<any>({});
@@ -35,71 +37,16 @@ const roundsUrl = computed(() => {
   return null;
 });
 
-const _round = {
-  id: 201,
-  category: "ORDER",
-  order_id: 70,
-  branch_id: 1,
-  items: null,
-  round_no: 114,
-  destination: "KITCHEN",
-  printed: 1,
-  created_at: "2023-12-02T23:07:00.000000Z",
-  updated_at: "2023-12-02T23:07:02.000000Z",
-  deleted_at: null,
-};
-
-const _order = {
-  id: 70,
-  reference: "1KUY0Z1O",
-  category: "DINE IN",
-  system_date: "2023-12-01T22:00:00.000000Z",
-  order_time: "16:07:00",
-  table_id: 2,
-  waiter_id: 133,
-  grand_total: 2500,
-  status: "DELIVERED",
-  printed: 1,
-  client_id: null,
-  branch_id: 1,
-  receipts: null,
-  paid: 1,
-  resolved: 1,
-  paid_amount: 2500,
-  order_date: "2023-12-02 16:07:00",
-  table: {
-    id: 2,
-    name: "TABLE 2",
-    capacity: 4,
-  },
-  waiter: null,
-  client: null,
-};
-
-const _items = [
-  {
-    id: 168,
-    order_id: 70,
-    item_id: 17,
-    parent_id: 0,
-    quantity: 1,
-    price: 2500,
-    amount: 2500,
-    destination: "KITCHEN",
-    round_key: 114,
-    comment: null,
-    delivered: 1,
-    created_at: "2023-12-02T23:07:00.000000Z",
-    updated_at: "2023-12-02T23:44:10.000000Z",
-    deleted_at: null,
-    name: "Beef pilao",
-    addons: [],
-  },
-];
-
 onBeforeMount(() => {
+  window.ipcRenderer.send("getPrinters");
+  window.ipcRenderer.on("printersList", (event, _printers) => {
+    printers.value = _printers;
+  });
+
   const _url = localStorage.getItem("url");
-  if (_url) {
+  const _printer = localStorage.getItem("printer");
+  if (_url && _printer) {
+    selectedPrinter.value = _printer;
     url.value = _url;
     const _branch = localStorage.getItem("branch");
     const keys = [
@@ -178,39 +125,47 @@ function fetchInvoices() {
       printingContent.value = _printingContent;
     }
     printInterval.value = setInterval(() => {
-    if (!isFetchingRounds.value && branch.value && roundsUrl.value) {
-      isFetchingRounds.value = true;
-      axios.get(url.value + "/api/pos/" + roundsUrl.value).then((response) => {
-        isFetchingRounds.value = false;
-        if (response.data.status) {
-          const round = response.data.round;
-          const items = response.data.items;
-          const order = response.data.order;
-          if (round.category == "ORDER") {
-            printableRound.value = round;
-            roundItems.value = items;
-            placedOrder.value = order;
-          } else {
-            if (Array.isArray(round?.items) && round?.items?.length > 0) {
-              order.grand_total = round?.items.reduce(
-                (a: any, b: any) => a + Number(b.amount),
-                0
+      if (!isFetchingRounds.value && branch.value && roundsUrl.value) {
+        isFetchingRounds.value = true;
+        axios
+          .get(url.value + "/api/pos/" + roundsUrl.value)
+          .then((response) => {
+            isFetchingRounds.value = false;
+            if (response.data.status) {
+              const round = response.data.round;
+              const items = response.data.items;
+              const order = response.data.order;
+              if (round.category == "ORDER") {
+                printableRound.value = round;
+                roundItems.value = items;
+                placedOrder.value = order;
+              } else {
+                if (Array.isArray(round?.items) && round?.items?.length > 0) {
+                  order.grand_total = round?.items.reduce(
+                    (a: any, b: any) => a + Number(b.amount),
+                    0
+                  );
+                }
+                printedInvoice.value = order;
+                invoiceItems.value = items;
+              }
+              latestPrintedRoundId.value = round.id;
+              localStorage.setItem(
+                "__last_printed_round",
+                latestPrintedRoundId.value
               );
             }
-            printedInvoice.value = order;
-            invoiceItems.value = items;
-          }
-          latestPrintedRoundId.value = round.id;
-          localStorage.setItem(
-            "__last_printed_round",
-            latestPrintedRoundId.value
-          );
-        }
-      });
-    }
+          });
+      }
     }, 6000);
     // End of interval
   }, 2000);
+}
+
+function setPrinter(event: any) {
+  if (event.target) {
+    localStorage.setItem("printer", event.target.value);
+  }
 }
 </script>
 <template>
@@ -219,6 +174,25 @@ function fetchInvoices() {
       <div class="col-12 pt-3" v-if="!Object.keys(branch).length || !url">
         <h4>Configure Printing Service</h4>
         <hr />
+        <div class="form-group row mb-2 align-items-center">
+          <label class="col-4">Printer:</label>
+          <div class="col-8">
+            <select
+              class="form-control form-select"
+              @change="setPrinter($event)"
+              v-model="selectedPrinter"
+            >
+              <option value="null" hidden disabled>Select Printer</option>
+              <option
+                :value="printer.name"
+                v-for="printer in printers"
+                :key="printer.name"
+              >
+                {{ printer.name }}
+              </option>
+            </select>
+          </div>
+        </div>
         <div class="form-group row mb-2 align-items-center">
           <label class="col-4">URL:</label>
           <div class="col-8">
@@ -265,7 +239,7 @@ function fetchInvoices() {
         </div>
         <div
           class="form-group row mb-2 align-items-center"
-          v-if="branches.length && choosenBranchId"
+          v-if="branches.length && choosenBranchId && selectedPrinter"
         >
           <label class="col-4"></label>
           <div class="col-8">
