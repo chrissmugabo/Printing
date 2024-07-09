@@ -167,11 +167,22 @@ function setPrinter(event: any) {
     localStorage.setItem("printer", event.target.value);
   }
 }
+
+function resetSettings() {
+  clearInterval(printInterval.value);
+  branch.value = {};
+  localStorage.removeItem("branch");
+  localStorage.removeItem("printer");
+  selectedPrinter.value = "";
+}
 </script>
 <template>
   <div class="container">
     <div class="row">
-      <div class="col-12 pt-3" v-if="!Object.keys(branch).length || !url">
+      <div
+        class="col-12 pt-3"
+        v-if="!Object.keys(branch).length || !url || !selectedPrinter"
+      >
         <h4>Configure Printing Service</h4>
         <hr />
         <div class="form-group row mb-2 align-items-center">
@@ -253,9 +264,48 @@ function setPrinter(event: any) {
         <PrintingFlag>
           <template #action>
             <div class="text-center">
-              <button class="btn btn-danger mt-3" type="button">
-                Reset Settings
-              </button>
+              <div class="panel">
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 0.125rem;
+                  "
+                >
+                  <h4>
+                    Server Url: <small>{{ url }}</small>
+                  </h4>
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 0.125rem;
+                  "
+                >
+                  <h4>
+                    Branch: <small>{{ branch.name }}</small>
+                  </h4>
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 0.125rem;
+                  "
+                >
+                  <h4>
+                    Printer: <small>{{ selectedPrinter }}</small>
+                  </h4>
+                </div>
+                <button
+                  class="btn btn-primary mt-3"
+                  type="button"
+                  @click="resetSettings"
+                >
+                  Reset Settings
+                </button>
+              </div>
             </div>
           </template>
         </PrintingFlag>

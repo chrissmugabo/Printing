@@ -35,7 +35,7 @@ const indexHtml = path.join(RENDERER_DIST, "index.html");
 
 async function createWindow() {
   win = new BrowserWindow({
-    width: 600,
+    width: 500,
     height: 400,
     title: "Printer Configuration",
     icon: path.join(process.env.APP_ROOT, "logo.ico"),

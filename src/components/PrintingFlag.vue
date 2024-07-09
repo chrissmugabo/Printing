@@ -2,7 +2,7 @@
 
 <template>
   <div id="temu-loader text-center">
-    <div style="z-index: 1060; position: fixed; top: 0; width: 100%">
+    <!--<div style="z-index: 1060; position: fixed; top: 0; width: 100%">
       <div class="loading text-center">
         <div class="load-circle1"></div>
         <div class="load-circle2"></div>
@@ -10,34 +10,32 @@
         <div class="load-circle4"></div>
         <div class="load-circle5"></div>
       </div>
-    </div>
+    </div> -->
     <div class="preloader">
       <div class="preloader-inner">
-        <div class="loadingText"><span>Printing... Don't unplug printer.</span></div>
-        <slot name="action"></slot>
+        <div class="loadingText">
+          <span>Printing... Don't unplug printer.</span>
+        </div>
+        <div style="margin-top: 2rem">
+          <slot name="action"></slot>
+        </div>
       </div>
     </div>
   </div>
 </template>
 <style scoped>
 .preloader {
-  position: fixed;
-  top: 63px;
-  left: 0;
-  z-index: 999999;
   width: 100%;
-  height: 100%;
+  height: 85vh;
   background: #fff;
   overflow: hidden;
   opacity: 1;
+  display: flex;
+  justify-content: center;
 }
 
 .preloader .preloader-inner {
-  position: absolute;
-  top: calc(50% - 63px);
-  left: 50%;
-  -webkit-transform: translate(-50%, -50%);
-  transform: translate(-50%, -50%);
+  margin: auto;
 }
 .preloader .preloader-inner .preloader-icon {
   width: 72px;

@@ -302,7 +302,8 @@ button:not(:disabled) {
 button:disabled {
   cursor: not-allowed;
 }
-[hidden], .d-none {
+[hidden],
+.d-none {
   display: none;
 }
 @media print {
@@ -321,4 +322,10 @@ button:disabled {
   select {
     display: none !important;
   }
+}
+.panel {
+  border-color: #f8f9fa !important;
+  box-shadow: 0 10px 40px 10px rgba(140, 152, 164, 0.175) !important;
+  border-radius: 0.7rem;
+  padding: 1.1rem 1.3rem;
 }
