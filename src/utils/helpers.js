@@ -1,16 +1,16 @@
 //import { ipcRenderer } from "electron";
 
 export const printInvoice = (id) => {
-  window.ipcRenderer.invoke("print-silent", testData).then(() => {
+  /*window.ipcRenderer.invoke("print-silent", testData).then(() => {
     console.log("Print Tested");
-  });
-  /* const elt = document.getElementById(id);
+  }); */
+  const elt = document.getElementById(id);
   if (elt) {
     const invoiceHTML = elt.innerHTML;
     window.ipcRenderer.invoke("print-silent", invoiceHTML).then(() => {
       console.log("Print request sent");
     });
-  } */
+  }
 };
 
 export const helper = {
@@ -132,14 +132,14 @@ export const testData = [
     // style the table
     style: { border: "1px solid #ddd", fontFamily: "sans-serif" },
     // list of the columns to be rendered in the table header
-    tableHeader: ['Animal', 'Age'],
-        // multi dimensional array depicting the rows and columns of the table body
-        tableBody: [
-            ['Cat', 2],
-            ['Dog', 4],
-            ['Horse', 12],
-            ['Pig', 4],
-        ],
+    tableHeader: ["Animal", "Age"],
+    // multi dimensional array depicting the rows and columns of the table body
+    tableBody: [
+      ["Cat", 2],
+      ["Dog", 4],
+      ["Horse", 12],
+      ["Pig", 4],
+    ],
     // list of rows to be rendered in the table footer
     tableFooter: [
       [

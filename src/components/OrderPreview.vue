@@ -55,14 +55,7 @@ function callback() {
       <p class="mb-0 h6">Email:{{ appSettings?.app_email }}</p>
       <p class="mb-0 h6">Address: {{ appSettings?.site_address }}</p>
     </div>
-    <div><p class="fs-5">Tables don't work</p></div>
     <div class="fs-5 py-1 border-bottom border-dashed">
-      <p class="mb-0 h6">
-        Order NO:
-        <b>#{{ helper.generateVoucherNo(props?.round?.round_no) }}</b>
-        &rarr;
-        {{ props?.round?.destination }}
-      </p>
       <table class="fs-5 table table-sm table-borderless mb-1">
         <tr>
           <td colspan="2">

@@ -41,6 +41,7 @@ async function createWindow() {
     icon: path.join(process.env.APP_ROOT, "logo.ico"),
     webPreferences: {
       preload,
+      
       // Warning: Enable nodeIntegration and disable contextIsolation is not secure in production
       // nodeIntegration: true,
 
@@ -61,6 +62,13 @@ async function createWindow() {
 
   // Test actively push message to the Electron-Renderer
   win.webContents.on("did-finish-load", () => {
+    win.webContents.print(
+      { silent: true, printBackground: true },
+      (success, failureReason) => {
+        if (!success) console.log(failureReason);
+        console.log("Print Initiated");
+      }
+    );
     win?.webContents.send("main-process-message", new Date().toLocaleString());
   });
 
@@ -116,26 +124,12 @@ ipcMain.on("print", (event) => {
   );
 });
 
-ipcMain.handle("print-silent", async (event, data) => {
-  const printOptions: any = {
-    preview: false,
-    margin: "0 0 0 0",
-    copies: 1,
-    printerName: "XP-80",
-    timeOutPerLine: 400,
-    //pageSize: "80mm", // page size
-    silent: true,
-    pageSize: {
-      width: 72.1, // Width in millimeters for 80mm paper
-      height: "auto", // Set height to auto to adjust based on content length
-    },
-  };
-  PosPrinter.PosPrinter.print(data, printOptions)
+ipcMain.handle("print-silent", async (event, invoiceHTML) => {
+  PosPrinter.PosPrinter.print([], {} as any)
     .then(console.log)
     .catch((error) => {
       console.error(error);
     });
-
   /*const printWindow = new BrowserWindow({
     show: false,
     webPreferences: {
