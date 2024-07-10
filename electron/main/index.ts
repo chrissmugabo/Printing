@@ -166,7 +166,6 @@ ipcMain.handle("print-silent", async (event, invoiceHTML, printerName) => {
         scaleFactor: scalingFactor,
       },
       (success, failureReason) => {
-        console.log(printerName);
         if (!success) console.log(failureReason);
         printWindow.close();
         console.log("Print Initiated");

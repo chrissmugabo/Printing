@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { helper, printInvoice } from "../utils/helpers.js";
 import { useLayout } from "../hooks/useLayout";
+import { ref } from "vue";
 
 const props = defineProps<{ order: any; items: any }>();
 const { appSettings } = useLayout();
-
+const printed = ref<number[]>([]);
 const vForCallback = {
   mounted(el: any, binding: any, vnode: any) {
     let element = binding.value;
@@ -28,7 +29,11 @@ const vForCallback = {
 
 function callback() {
   if (props?.items?.length) {
-    printInvoice("invoice-preview");
+    const id = props.order.id;
+    if (!printed.value.includes(id)) {
+      printed.value.push(id);
+      printInvoice("invoice-preview");
+    }
   }
 }
 </script>

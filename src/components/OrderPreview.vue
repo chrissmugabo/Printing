@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { helper, printInvoice } from "../utils/helpers.js";
 import { useLayout } from "../hooks/useLayout";
 
 const props = defineProps<{ round: any; order: any; items: any }>();
 const { appSettings } = useLayout();
-
+const printed = ref<number[]>([]);
 const orderTotal = computed(() =>
   props.items.reduce(
     (a: any, b: any) => a + Number((b.price || b.cost) * b.quantity),
@@ -35,7 +35,11 @@ const vForCallback = {
 
 function callback() {
   if (props?.items?.length) {
-    printInvoice("order-preview");
+    const id = props.order.id;
+    if (!printed.value.includes(id)) {
+      printed.value.push(id);
+      printInvoice("order-preview");
+    }
   }
 }
 </script>

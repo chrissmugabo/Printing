@@ -11,27 +11,24 @@ const { appSettings } = useLayout();
 const printers = ref<Electron.PrinterInfo[]>([]);
 const selectedPrinter = ref("");
 const branches = ref<any>([]);
+const content = ref<String[]>([]);
 const url = ref("");
 const branch = ref<any>({});
 const printableRound = ref<any>({});
 const roundItems = ref<any>([]);
 const printInterval = ref<any>(null);
 const isFetchingRounds = ref(false);
-const printingToken = ref<any>(null);
 const placedOrder = ref<any>({});
 const latestPrintedRoundId = ref<any>(null);
 const printedInvoice = ref<any>({});
 const invoiceItems = ref<any>([]);
-const printingContent = ref<any>("ALL");
 const choosenBranchId = ref();
 const roundsUrl = computed(() => {
-  if (branch.value && printingToken.value) {
-    let url = latestPrintedRoundId.value
-      ? `next-printable-round?print_token=${printingToken.value}&latest=${latestPrintedRoundId.value}&branch_id=${branch?.value?.id}`
-      : `next-printable-round?print_token=${printingToken.value}&branch_id=${branch?.value?.id}`;
-    if (printingContent.value !== "ALL") {
-      url += `&category=${printingContent.value}`;
-    }
+  const printingContent = content.value.join("");
+  if (branch.value) {
+    const url = latestPrintedRoundId.value
+      ? `next-printable-round?latest=${latestPrintedRoundId.value}&branch_id=${branch?.value?.id}&content=${printingContent}`
+      : `next-printable-round?branch_id=${branch?.value?.id}&content=${printingContent}`;
     return url;
   }
   return null;
@@ -45,9 +42,11 @@ onBeforeMount(() => {
 
   const _url = localStorage.getItem("url");
   const _printer = localStorage.getItem("printer");
-  if (_url && _printer) {
+  const _content = localStorage.getItem("__printing_content");
+  if (_url && _printer && _content) {
     selectedPrinter.value = _printer;
     url.value = _url;
+    content.value = JSON.parse(_content);
     const _branch = localStorage.getItem("branch");
     const keys = [
       "site_address",
@@ -99,6 +98,7 @@ function setBranch() {
   if (row) {
     branch.value = row;
     localStorage.setItem("branch", JSON.stringify(row));
+    localStorage.setItem("__printing_content", JSON.stringify(content.value));
     setTimeout(() => {
       fetchInvoices();
     }, 250);
@@ -108,22 +108,12 @@ function setBranch() {
 }
 
 function fetchInvoices() {
-  let _printingToken = localStorage.getItem("__printing_token");
-  if (!_printingToken) {
-    _printingToken = Math.random().toString(36).slice(2);
-    localStorage.setItem("__printing_token", _printingToken);
-  }
-  printingToken.value = _printingToken;
   const lastPrintedRound = localStorage.getItem("__last_printed_round");
   if (lastPrintedRound) {
     latestPrintedRoundId.value = lastPrintedRound;
   }
   setTimeout(() => {
     sessionStorage.setItem("isPrinting", "true");
-    const _printingContent = localStorage.getItem("__printing_content");
-    if (_printingContent) {
-      printingContent.value = _printingContent;
-    }
     printInterval.value = setInterval(() => {
       if (!isFetchingRounds.value && branch.value && roundsUrl.value) {
         isFetchingRounds.value = true;
@@ -231,7 +221,7 @@ function resetSettings() {
           </div>
         </div>
         <div
-          class="form-group row mb-2 align-items-center"
+          class="form-group row mb-3 align-items-center"
           v-if="branches.length"
         >
           <label class="col-4">Branch:</label>
@@ -250,7 +240,58 @@ function resetSettings() {
         </div>
         <div
           class="form-group row mb-2 align-items-center"
-          v-if="branches.length && choosenBranchId && selectedPrinter"
+          v-if="branches.length"
+        >
+          <label class="col-4">Printable Content:</label>
+          <div class="col-8">
+            <div
+              style="
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: repeat(2, 1fr);
+                gap: 10px;
+                width: 100%;
+              "
+            >
+              <div class="form-check" style="margin-right: 0.5rem">
+                <input
+                  class="form-check-input form-check-input-primary"
+                  type="checkbox"
+                  value="K"
+                  v-model="content"
+                />
+                <label class="ms-2">Kitchen Orders</label>
+              </div>
+              <div class="form-check" style="margin-right: 0.5rem">
+                <input
+                  class="form-check-input form-check-input-primary"
+                  type="checkbox"
+                  value="B"
+                  v-model="content"
+                />
+                <label class="ms-2">Bar Orders</label>
+              </div>
+              <div class="form-check" style="margin-right: 0.5rem">
+                <input
+                  class="form-check-input form-check-input-primary"
+                  type="checkbox"
+                  value="I"
+                  v-model="content"
+                />
+                <label class="ms-2">Invoices</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="form-group row mb-2 align-items-center"
+          v-if="
+            branches.length &&
+            choosenBranchId &&
+            selectedPrinter &&
+            content.length
+          "
         >
           <label class="col-4"></label>
           <div class="col-8">
