@@ -6,6 +6,7 @@ import os from "node:os";
 import fs from "node:fs";
 
 const require = createRequire(import.meta.url);
+const PDFExporter = require("electron-pdf");
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 process.env.APP_ROOT = path.join(__dirname, "../..");
@@ -131,8 +132,7 @@ ipcMain.handle("print-silent", async (event, invoiceHTML, printerName) => {
       contextIsolation: false,
     },
   });
-  printWindow.loadURL(
-    `data:text/html;charset=utf-8,${encodeURIComponent(`
+  const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(`
     <!DOCTYPE html>
     <html lang="en">
       <head>
@@ -146,30 +146,34 @@ ipcMain.handle("print-silent", async (event, invoiceHTML, printerName) => {
     </head>
     <body>${invoiceHTML}</body>
     </html>
-  `)}`
-  );
-
-  printWindow.webContents.on("did-finish-load", () => {
-    const desiredWidthMm = 88;
-    const a4WidthMm = 210;
-    const scalingFactor = desiredWidthMm / a4WidthMm;
-    printWindow.webContents.print(
-      {
-        deviceName: printerName,
-        silent: true,
-        printBackground: true,
-        //pageSize: { width: 88000, height: 0 },
-        margins: { marginType: "none" },
-        landscape: false,
-        copies: 1,
-        scaleFactor: 100, 
-        dpi:{ horizontal: 600, vertical: 600 }
-      },
-      (success, failureReason) => {
-        if (!success) console.log(failureReason);
-        printWindow.close();
-        console.log("Print Initiated");
-      }
-    );
+  `)}`;
+  const options = {
+    margins: {
+      top: 20,
+      right: 20,
+      bottom: 20,
+      left: 20,
+    },
+    printBackground: true,
+  };
+  const pdfPath = path.join(__dirname, "invoice.pdf");
+  const PDF = PDFExporter.default.PDFExporter;
+  console.log(PDF);
+  
+  const pdfGenerator = new PDF({
+    input: dataUrl,
+    output: pdfPath,
+    options: options,
   });
+
+  console.log(pdfGenerator);
+
+  // pdfExporter.on('error', (err) => {
+  //   console.error('Failed to generate PDF:', err);
+  // });
+
+  // pdfExporter.on('done', () => {
+  //   console.log('PDF generated successfully');
+  //   event.reply('pdfGenerated', pdfPath);
+  // });
 });

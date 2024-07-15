@@ -1,6 +1,6 @@
 {
   "name": "printing-service",
-  "version": "1.1.0",
+  "version": "1.0.1",
   "main": "dist-electron/main/index.js",
   "description": "Printing Service for tame apps",
   "author": "Geekslord Tower <vahlens95@gmail.com>",
@@ -53,7 +53,7 @@
       "dist-electron"
     ],
     "win": {
-      "icon": "dist/icons/win/icon.ico",
+      "icon": "public/icons/win/icon.ico",
       "target": [
         {
           "target": "nsis",
