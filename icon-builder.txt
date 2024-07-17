@@ -1,2 +1,0 @@
-
-npx electron-icon-builder --input=logo.png --output=public
