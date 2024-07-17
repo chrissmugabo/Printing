@@ -41,7 +41,10 @@ const App = {
       window.ipcRenderer.on("printersList", (event, _printers) => {
         printers.value = _printers;
       });
-
+      window.ipcRenderer.on("printedContent", (event, id) => {
+        console.log(id);
+        axios.get(`${url.value}/api/pos/update-printed-round/${id}`);
+      });
       const _url = localStorage.getItem("url");
       const _printer = localStorage.getItem("printer");
       const _content = localStorage.getItem("__printing_content");

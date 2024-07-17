@@ -104,12 +104,57 @@ const helper = {
   },
 };
 
-const printContent = async (data) => {
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 600,
+    height: 400,
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+      enableRemoteModule: false,
+      nodeIntegration: true,
+      contextIsolation: true,
+    },
+    icon: path.join(__dirname, "/assets/icons/logo.png"),
+  });
+
+  mainWindow.setTitle("Printing Service");
+  mainWindow.loadURL("file://" + __dirname + "/index.html");
+
+  mainWindow.on("closed", () => {
+    mainWindow = null;
+  });
+
+  mainWindow.webContents.on("did-finish-load", () => {});
+}
+
+app.on("ready", () => {
+  createWindow();
+});
+
+app.on("window-all-closed", function () {
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
+});
+
+app.on("activate", function () {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
+});
+
+ipcMain.on("getPrinters", (event) => {
+  mainWindow.webContents.getPrintersAsync().then((printers) => {
+    event.reply("printersList", printers);
+  });
+});
+
+ipcMain.handle("print-content", async (event, data) => {
   const options = {
     type: PrinterTypes.EPSON, // or PrinterTypes.STAR
     characterSet: CharacterSet.PC852_LATIN2, // Printer character set
     removeSpecialCharacters: false, // Removes special characters - default: false
-    lineCharacter: "=", // Set character for lines - default: "-"
+    //lineCharacter: "=", // Set character for lines - default: "-"
     breakLine: BreakLine.WORD,
     options: {
       timeout: 5000,
@@ -137,11 +182,17 @@ const printContent = async (data) => {
     printer.drawLine();
 
     printer.alignLeft();
-    printer.println(
-      `${
-        data?.round?.category === "ORDER" ? "Order" : "Invoice"
-      } #: ${helper.generateVoucherNo(data?.round?.round_no)}`
-    );
+    if (data?.round?.category === "ORDER") {
+      printer.println(
+        `Order #: ${helper.generateVoucherNo(data?.round?.round_no)}(${
+          data?.round?.destination
+        })`
+      );
+    } else {
+      printer.println(
+        `Invoice #: ${helper.generateVoucherNo(data?.order?.id)}`
+      );
+    }
     printer.println(`Customer: ${data?.order?.client?.name || "Walk-In"}`);
     printer.tableCustom([
       {
@@ -202,56 +253,8 @@ const printContent = async (data) => {
     printer.cut();
 
     await printer.execute();
+    mainWindow?.webContents.send("printedContent", data?.round?.id);
   } catch (error) {
     console.error("Print failed:", error);
   }
-};
-
-function createWindow() {
-  mainWindow = new BrowserWindow({
-    width: 600,
-    height: 400,
-    webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
-      enableRemoteModule: false,
-      nodeIntegration: true,
-      contextIsolation: true,
-    },
-    icon: path.join(__dirname, "/assets/icons/logo.png"),
-  });
-
-  mainWindow.setTitle("Printing Service");
-  mainWindow.loadURL("file://" + __dirname + "/index.html");
-
-  mainWindow.on("closed", () => {
-    mainWindow = null;
-  });
-
-  mainWindow.webContents.on("did-finish-load", () => {});
-}
-
-app.on("ready", () => {
-  createWindow();
-});
-
-app.on("window-all-closed", function () {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
-});
-
-app.on("activate", function () {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
-});
-
-ipcMain.on("getPrinters", (event) => {
-  mainWindow.webContents.getPrintersAsync().then((printers) => {
-    event.reply("printersList", printers);
-  });
-});
-
-ipcMain.handle("print-content", async (event, data) => {
-  printContent(data);
 });
