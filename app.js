@@ -16,7 +16,7 @@ const App = {
     const appSettings = ref({});
     const printers = ref([]);
     const printerIpAddress = ref("");
-    const printerPort = ref("")
+    const printerPort = ref("");
     const printerType = ref("EPSON");
     const printerInterface = ref("TCP");
     const selectedPrinter = ref("");
@@ -54,20 +54,20 @@ const App = {
       const _port = localStorage.getItem("printer_port");
       const _interface = localStorage.getItem("printer_interface");
       const _type = localStorage.getItem("printer_type");
-      
+
       if (_ip) {
         printerIpAddress.value = _ip;
       }
-      if(_port) {
+      if (_port) {
         printerPort.value = _port;
       }
-      if(_type) {
+      if (_type) {
         printerType.value = _type;
       }
-      if(_interface) {
-        printerInterface.value = _interface
+      if (_interface) {
+        printerInterface.value = _interface;
       }
-      if (_url && _printer && _content) {
+      if (_url && _printer && _content && (_port || _ip)) {
         selectedPrinter.value = _printer;
         url.value = _url;
         content.value = JSON.parse(_content);
@@ -128,12 +128,14 @@ const App = {
         );
         localStorage.setItem("printer_type", printerType.value);
         localStorage.setItem("printer_interface", printerInterface.value);
-        if(printerIpAddress.value) {
+        if (printerIpAddress.value) {
           localStorage.setItem("printer_ip_address", printerIpAddress.value);
-          localStorage.removeItem('printer_port')
+          localStorage.removeItem("printer_port");
+          printerPort.value = "";
         } else {
           localStorage.setItem("printer_port", printerPort.value);
-          localStorage.removeItem('printer_ip_address')
+          localStorage.removeItem("printer_ip_address");
+          printerIpAddress.value = "";
         }
         setTimeout(() => {
           fetchInvoices();
@@ -161,17 +163,18 @@ const App = {
                   const round = response.data.round;
                   const order = response.data.order;
                   const items = response.data.items;
-                  
-                  printer_port,printer_interface,printer_type
-
                   const data = {
                     printer: selectedPrinter.value,
+                    type: printerType.value,
+                    interface: printerInterface.value,
+                    port: printerPort.value,
+                    ip: printerIpAddress.value,
                     round: round,
                     items: items,
                     order: order,
-                    ip: printerIpAddress.value,
                     settings: { ...appSettings.value },
                   };
+
                   window.ipcRenderer.invoke("print-content", data).then(() => {
                     console.log("Print request sent");
                   });

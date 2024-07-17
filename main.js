@@ -107,7 +107,7 @@ const helper = {
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 600,
-    height: 400,
+    height: 480,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       enableRemoteModule: false,
@@ -151,7 +151,7 @@ ipcMain.on("getPrinters", (event) => {
 
 ipcMain.handle("print-content", async (event, data) => {
   const options = {
-    type: PrinterTypes.EPSON, // or PrinterTypes.STAR
+    type: PrinterTypes[data.type], // or PrinterTypes.STAR
     characterSet: CharacterSet.PC852_LATIN2, // Printer character set
     removeSpecialCharacters: false, // Removes special characters - default: false
     //lineCharacter: "=", // Set character for lines - default: "-"
@@ -163,13 +163,13 @@ ipcMain.handle("print-content", async (event, data) => {
   if (data.ip) {
     options.interface = `tcp://${data.ip}`;
   } else {
-    options.interface =  '\\.\USB001';
+    options.interface = `\\.\${data.port}`;
   }
   const printer = new ThermalPrinter(options);
 
   try {
     await printer.isPrinterConnected();
-    printer.setPrinterDriver(Object)
+    printer.setPrinterDriver(Object);
     printer.alignCenter();
     printer.setTypeFontA();
     printer.setTextDoubleHeight();
