@@ -135,20 +135,17 @@ const App = {
                   const round = response.data.round;
                   const order = response.data.order;
                   const items = response.data.items;
-                  if (round.category == "ORDER") {
-                    const data = {
-                      printer: selectedPrinter.value,
-                      round: round,
-                      items: items,
-                      order: order,
-                      ip: printerIpAddress.value,
-                      settings: { ...appSettings.value },
-                    };
-                    window.ipcRenderer.invoke("print-silent", data).then(() => {
-                      console.log("Print request sent");
-                    });
-                  } else {
-                  }
+                  const data = {
+                    printer: selectedPrinter.value,
+                    round: round,
+                    items: items,
+                    order: order,
+                    ip: printerIpAddress.value,
+                    settings: { ...appSettings.value },
+                  };
+                  window.ipcRenderer.invoke("print-content", data).then(() => {
+                    console.log("Print request sent");
+                  });
                   latestPrintedRoundId.value = round.id;
                   localStorage.setItem(
                     "__last_printed_round",

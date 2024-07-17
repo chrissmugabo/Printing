@@ -1,7 +1,12 @@
 const electron = require("electron");
 const path = require("path");
 const { app, BrowserWindow, ipcMain } = electron;
-const { ThermalPrinter, PrinterTypes, CharacterSet, BreakLine } = require('node-thermal-printer');
+const {
+  ThermalPrinter,
+  PrinterTypes,
+  CharacterSet,
+  BreakLine,
+} = require("node-thermal-printer");
 //const {ThermalPrinter } = require("node-thermal-printer").printer;
 //const PrinterTypes = require("node-thermal-printer").types;
 
@@ -83,7 +88,7 @@ const helper = {
   },
 
   formatMoney(num) {
-    return `RWF ${this.formatNumber(num)}`;
+    return `${this.formatNumber(num)}`;
   },
 
   generateFormData(obj) {
@@ -99,10 +104,10 @@ const helper = {
   },
 };
 
-const printInvoice = async (data) => {
+const printContent = async (data) => {
   const options = {
     type: PrinterTypes.EPSON, // or PrinterTypes.STAR
-   characterSet: CharacterSet.PC852_LATIN2, // Printer character set
+    characterSet: CharacterSet.PC852_LATIN2, // Printer character set
     removeSpecialCharacters: false, // Removes special characters - default: false
     lineCharacter: "=", // Set character for lines - default: "-"
     breakLine: BreakLine.WORD,
@@ -133,7 +138,9 @@ const printInvoice = async (data) => {
 
     printer.alignLeft();
     printer.println(
-      `Order #: ${helper.generateVoucherNo(data?.round?.round_no)}`
+      `${
+        data?.round?.category === "ORDER" ? "Order" : "Invoice"
+      } #: ${helper.generateVoucherNo(data?.round?.round_no)}`
     );
     printer.println(`Customer: ${data?.order?.client?.name || "Walk-In"}`);
     printer.tableCustom([
@@ -160,7 +167,7 @@ const printInvoice = async (data) => {
     printer.drawLine();
 
     printer.tableCustom([
-      { text: "Description", align: "LEFT", width: 0.5 },
+      { text: "Item", align: "LEFT", width: 0.5 },
       { text: "Qty", align: "CENTER", width: 0.1 },
       { text: "Price", align: "CENTER", width: 0.2 },
       { text: "Total", align: "RIGHT", width: 0.2 },
@@ -183,7 +190,15 @@ const printInvoice = async (data) => {
     printer.setTextDoubleWidth();
     printer.println(`Total: ${helper.formatMoney(data?.order?.grand_total)}`);
     printer.setTextNormal();
-
+    printer.drawLine();
+    if (data?.round?.category !== "ORDER") {
+      printer.alignCenter();
+      printer.println(`Dial ${data?.settings?.momo_code} to pay with MOMO`);
+      printer.println(
+        `This is not a legal receipt. Please ask your legal receipt.`
+      );
+      printer.println(`Thank you!`);
+    }
     printer.cut();
 
     await printer.execute();
@@ -191,6 +206,7 @@ const printInvoice = async (data) => {
     console.error("Print failed:", error);
   }
 };
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 600,
@@ -236,6 +252,6 @@ ipcMain.on("getPrinters", (event) => {
   });
 });
 
-ipcMain.handle("print-silent", async (event, data) => {
-  printInvoice(data);
+ipcMain.handle("print-content", async (event, data) => {
+  printContent(data);
 });
