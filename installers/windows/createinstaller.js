@@ -14,12 +14,12 @@ function getInstallerConfig () {
   const outPath = path.join(rootPath, 'release-builds')
 
   return Promise.resolve({
-    appDirectory: path.join(outPath, 'electron-example-win32-ia32/'),
-    authors: 'Santhosh Veer',
+    appDirectory: path.join(outPath, 'printing-service-win32-ia32/'),
+    authors: 'Tame Apps',
     noMsi: true,
     outputDirectory: path.join(outPath, 'windows-installer'),
-    exe: 'electron-example.exe',
-    setupExe: 'ElectronExampleInstaller.exe',
-    setupIcon: path.join(rootPath, 'assets', 'icons', 'win', 'Icon.ico')
+    exe: 'printing-service.exe',
+    setupExe: 'PrintingServiceInstaller.exe',
+    setupIcon: path.join(rootPath, 'assets', 'app-icon', 'win', 'icon.ico')
   })
 }

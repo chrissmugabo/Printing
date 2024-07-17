@@ -54,14 +54,14 @@ function zipAssets () {
   const outPath = path.join(__dirname, '..', 'out')
 
   const zipAssets = [{
-    name: 'electron-api-demos-mac.zip',
-    path: path.join(outPath, 'Electron API Demos-darwin-x64', 'Electron API Demos.app')
+    name: 'tame-apps-printing-service-mac.zip',
+    path: path.join(outPath, 'Tame Apps Printing Service-darwin-x64', 'Tame Apps Printing Service.app')
   }, {
-    name: 'electron-api-demos-windows.zip',
-    path: path.join(outPath, 'Electron API Demos-win32-ia32')
+    name: 'tame-apps-printing-service-windows.zip',
+    path: path.join(outPath, 'Tame Apps Printing Service-win32-ia32')
   }, {
-    name: 'electron-api-demos-linux.zip',
-    path: path.join(outPath, 'Electron API Demos-linux-x64')
+    name: 'tame-apps-printing-service-linux.zip',
+    path: path.join(outPath, 'Tame Apps Printing Service-linux-x64')
   }]
 
   return Promise.all(zipAssets.map(zipAsset)).then((zipAssets) => {
@@ -69,18 +69,18 @@ function zipAssets () {
       name: 'RELEASES',
       path: path.join(outPath, 'windows-installer', 'RELEASES')
     }, {
-      name: 'ElectronAPIDemosSetup.exe',
-      path: path.join(outPath, 'windows-installer', 'ElectronAPIDemosSetup.exe')
+      name: 'TameAppsPrintingService.exe',
+      path: path.join(outPath, 'windows-installer', 'TameAppsPrintingService.exe')
     }, {
-      name: `electron-api-demos-${version}-full.nupkg`,
-      path: path.join(outPath, 'windows-installer', `electron-api-demos-${version}-full.nupkg`)
+      name: `tame-apps-printing-service-${version}-full.nupkg`,
+      path: path.join(outPath, 'windows-installer', `tame-apps-printing-service-${version}-full.nupkg`)
     }])
   })
 }
 
 function createRelease (assets) {
   const options = {
-    uri: 'https://api.github.com/repos/electron/electron-api-demos/releases',
+    uri: 'https://api.github.com/repos/electron/tame-apps-printing-service/releases',
     headers: {
       Authorization: `token ${token}`,
       'User-Agent': `node/${process.versions.node}`

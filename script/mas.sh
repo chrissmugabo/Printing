@@ -11,7 +11,7 @@ electron-packager . \
   --asar-unpack=protocol-link.html \
   --overwrite \
   --platform=mas \
-  --app-bundle-id=com.github.electron-api-demos \
+  --app-bundle-id=com.github.tame-apps-printing-service \
   --app-version="$npm_package_version" \
   --build-version="1.1.0" \
   --arch=x64 \
