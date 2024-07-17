@@ -163,14 +163,13 @@ ipcMain.handle("print-content", async (event, data) => {
   if (data.ip) {
     options.interface = `tcp://${data.ip}`;
   } else {
-    const _electron = typeof process !== 'undefined' && process.versions && !!process.versions.electron;
-    options.interface = `printer:${data?.printer}`;
-    options.driver = require(_electron ? 'electron-printer' : 'printer')
+    options.interface =  '\\.\USB001';
   }
   const printer = new ThermalPrinter(options);
 
   try {
     await printer.isPrinterConnected();
+    printer.setPrinterDriver(Object)
     printer.alignCenter();
     printer.setTypeFontA();
     printer.setTextDoubleHeight();

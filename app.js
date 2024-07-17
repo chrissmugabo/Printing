@@ -16,6 +16,9 @@ const App = {
     const appSettings = ref({});
     const printers = ref([]);
     const printerIpAddress = ref("");
+    const printerPort = ref("")
+    const printerType = ref("EPSON");
+    const printerInterface = ref("TCP");
     const selectedPrinter = ref("");
     const branches = ref([]);
     const content = ref([]);
@@ -48,8 +51,21 @@ const App = {
       const _printer = localStorage.getItem("printer");
       const _content = localStorage.getItem("__printing_content");
       const _ip = localStorage.getItem("printer_ip_address");
+      const _port = localStorage.getItem("printer_port");
+      const _interface = localStorage.getItem("printer_interface");
+      const _type = localStorage.getItem("printer_type");
+      
       if (_ip) {
         printerIpAddress.value = _ip;
+      }
+      if(_port) {
+        printerPort.value = _port;
+      }
+      if(_type) {
+        printerType.value = _type;
+      }
+      if(_interface) {
+        printerInterface.value = _interface
       }
       if (_url && _printer && _content) {
         selectedPrinter.value = _printer;
@@ -110,7 +126,15 @@ const App = {
           "__printing_content",
           JSON.stringify(content.value)
         );
-        localStorage.setItem("printer_ip_address", printerIpAddress.value);
+        localStorage.setItem("printer_type", printerType.value);
+        localStorage.setItem("printer_interface", printerInterface.value);
+        if(printerIpAddress.value) {
+          localStorage.setItem("printer_ip_address", printerIpAddress.value);
+          localStorage.removeItem('printer_port')
+        } else {
+          localStorage.setItem("printer_port", printerPort.value);
+          localStorage.removeItem('printer_ip_address')
+        }
         setTimeout(() => {
           fetchInvoices();
         }, 250);
@@ -137,6 +161,9 @@ const App = {
                   const round = response.data.round;
                   const order = response.data.order;
                   const items = response.data.items;
+                  
+                  printer_port,printer_interface,printer_type
+
                   const data = {
                     printer: selectedPrinter.value,
                     round: round,
@@ -197,6 +224,9 @@ const App = {
       choosenBranchId,
       roundsUrl,
       printerIpAddress,
+      printerType,
+      printerInterface,
+      printerPort,
       setUrl,
       setBranch,
       fetchInvoices,
