@@ -163,7 +163,8 @@ ipcMain.handle("print-content", async (event, data) => {
   if (data.ip) {
     options.interface = `tcp://${data.ip}`;
   } else {
-    options.interface = `printer:${printer}`;
+    options.interface = `printer:${data?.printer}`;
+    options.driver = require("printer")
   }
   const printer = new ThermalPrinter(options);
 

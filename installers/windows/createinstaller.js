@@ -20,6 +20,7 @@ function getInstallerConfig () {
     outputDirectory: path.join(outPath, 'windows-installer'),
     exe: 'printing-service.exe',
     setupExe: 'PrintingServiceInstaller.exe',
-    setupIcon: path.join(rootPath, 'assets', 'app-icon', 'win', 'icon.ico')
+    setupIcon: path.join(rootPath, 'assets', 'app-icon', 'win', 'icon.ico'),
+    description: "Invoices and Orders printing configurations for different printers",
   })
 }
