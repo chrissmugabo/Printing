@@ -4,20 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Printing Service</title>
-    <link rel="stylesheet" href="assets/css/custom.css?ver=1.0.3" />
+    <link rel="stylesheet" href="assets/css/custom.min.css?ver=1.0.4" />
     <script src="assets/js/vue.global.js"></script>
   </head>
   <body>
     <div id="app">
-      <div class="container">
+      <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-12">
-            <h4>Configure Printers for invoices and Orders</h4>
+            <h4 class="mb-0">Configure Printers for invoices and Orders</h4>
             <hr />
           </div>
           <div class="col-5">
             <div class="form-group">
-              <label class="col-4">URL:</label>
+              <label>URL:</label>
               <input
                 type="text"
                 class="form-control"
@@ -27,8 +27,8 @@
             </div>
           </div>
           <div class="col-4">
-            <div class="form-group" v-if="!branches.length">
-              <label style="visibility: hidden">Button</label>
+            <div class="form-group" v-if="!choosenBranchId">
+              <label style="visibility: hidden; width: 100%">Button</label>
               <button
                 type="button"
                 class="btn btn-primary"
@@ -38,7 +38,7 @@
                 Get Branches
               </button>
             </div>
-            <div class="row mb-3 align-items-center" v-if="branches.length">
+            <div class="align-items-center" v-else-if="branches.length">
               <div class="form-group">
                 <label>Branch:</label>
                 <select
@@ -56,8 +56,18 @@
                 </select>
               </div>
             </div>
+            <div class="" v-else>
+              <label>Branch:</label>
+              <input
+                type="text"
+                :value="branch?.name"
+                class="form-control"
+                readonly
+              />
+            </div>
           </div>
           <div class="col-3">
+            <label style="visibility: hidden; width: 100%">Button</label>
             <button
               type="button"
               class="btn btn-primary w-100"
@@ -68,16 +78,26 @@
             </button>
           </div>
         </div>
+        <hr />
         <div class="row mb-2">
-          <div class="col-12">
-            <h4>Available Printers</h4>
-            <hr />
+          <div class="col-12" v-if="displayMode === 'PRINTERS_VIEW'">
+            <div class="w-100 d-flex align-items-center">
+              <h4 class="mb-0">Available Printers</h4>
+              <button
+                class="btn btn-primary"
+                style="margin-left: auto"
+                type="button"
+                @click="displayMode=FORM_VIEW"
+              >
+                Add New
+              </button>
+            </div>
           </div>
           <div class="col-12 pt-3" v-if="displayMode !== 'PRINTERS_VIEW'">
-            <h5>Add Printer</h5>
+            <h4>Add Printer</h4>
             <div class="form-group row mb-2 align-items-center">
-              <label class="col-4">Printer Name:</label>
-              <div class="col-8">
+              <label class="col-3">Printer Name:</label>
+              <div class="col-4">
                 <select
                   class="form-control form-select"
                   v-model="selectedPrinter"
@@ -94,8 +114,8 @@
               </div>
             </div>
             <div class="form-group row mb-2 align-items-center">
-              <label class="col-4">Printer Type:</label>
-              <div class="col-8">
+              <label class="col-3">Printer Type:</label>
+              <div class="col-4">
                 <select class="form-control form-select" v-model="printerType">
                   <option value="EPSON">EPSON</option>
                   <option value="STAR">STAR</option>
@@ -106,8 +126,8 @@
               </div>
             </div>
             <div class="form-group row mb-2 align-items-center">
-              <label class="col-4">Interface:</label>
-              <div class="col-8">
+              <label class="col-3">Interface:</label>
+              <div class="col-4">
                 <select
                   class="form-control form-select"
                   v-model="printerInterface"
@@ -121,8 +141,8 @@
               class="form-group row mb-2 align-items-center"
               v-if="printerInterface === 'TCP'"
             >
-              <label class="col-4">IP Address:</label>
-              <div class="col-8">
+              <label class="col-3">IP Address:</label>
+              <div class="col-4">
                 <input
                   type="text"
                   class="form-control"
@@ -132,8 +152,8 @@
               </div>
             </div>
             <div class="form-group row mb-2 align-items-center" v-else>
-              <label class="col-4">PORT:</label>
-              <div class="col-8">
+              <label class="col-3">PORT:</label>
+              <div class="col-4">
                 <input
                   type="text"
                   class="form-control"
@@ -143,10 +163,7 @@
               </div>
             </div>
 
-            <div
-              class="form-group row mb-2 align-items-center"
-              v-if="branches.length"
-            >
+            <div class="form-group row mb-2 align-items-center">
               <label class="col-4">Printable Content:</label>
               <div class="col-8">
                 <div
@@ -190,8 +207,8 @@
             </div>
 
             <div class="form-group row mb-2 align-items-center">
-              <label class="col-4"></label>
-              <div class="col-8">
+              <label class="col-3"></label>
+              <div class="col-4">
                 <button
                   type="button"
                   class="btn btn-primary"
@@ -203,16 +220,105 @@
               </div>
             </div>
           </div>
-          <div class="col-12 pt-3 text-center" v-else>
-            <div class="text-center" v-if="!activePrinters.length">
+          <div class="col-12 pt-3" style="text-align: center" v-else>
+            <div style="text-align: center" v-if="!activePrinters.length">
               <h4>No Printers available</h4>
               <button
                 type="button"
                 class="btn btn-primary"
-                @click="displayMode=FORM_VIEW"
+                @click="showPrinterForm"
               >
                 Add Printers
               </button>
+            </div>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                width: 100%;
+              "
+              v-else
+            >
+              <div
+                class="panel mb-2"
+                v-for="printer in activePrinters"
+                :key="printer.id"
+              >
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 0.125rem;
+                  "
+                >
+                  <h4>Name: <small>{{ printer.name }}</small></h4>
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 0.125rem;
+                  "
+                >
+                  <h4>Type: <small>{{ printer.type }}</small></h4>
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 0.125rem;
+                  "
+                >
+                  <h4>Interface: <small>{{ printer.interface }}</small></h4>
+                </div>
+                <div
+                  v-if="printer.ip"
+                  style="
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 0.125rem;
+                  "
+                >
+                  <h4>IP address: <small>{{ printer.ip }}</small></h4>
+                </div>
+                <div
+                  v-if="printer.port"
+                  style="
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 0.125rem;
+                  "
+                >
+                  <h4>Port: <small>{{ printer.port }}</small></h4>
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 0.125rem;
+                  "
+                >
+                  <h4>Content: <small>{{ printer.content }}</small></h4>
+                </div>
+                <div class="d-flex mt-3">
+                  <button
+                    class="btn btn-primary"
+                    type="button"
+                    @click="showPrinterForm(printer)"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    class="btn btn-danger"
+                    style="margin-left: auto"
+                    type="button"
+                    @click="deletePrinter(printer)"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

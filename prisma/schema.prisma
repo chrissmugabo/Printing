@@ -15,6 +15,7 @@ datasource db {
 
 model Printer {
   id        Int     @id @default(autoincrement())
+  name      String?
   type      String
   ip        String?
   port      String?

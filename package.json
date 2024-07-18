@@ -5,9 +5,7 @@
   "description": "Invoices and Orders printing configurations for different printers",
   "bin": "cli.js",
   "scripts": {
-    "start": "nodemon --exec electron .",
-    "dev": "electron . --debug",
-    "test": "mocha && standard",
+    "serve": "nodemon --exec electron .",
     "package": "npm-run-all package:*",
     "package:mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --out=out --icon=assets/app-icon/mac/icon.icns --osx-sign.identity='Developer ID Application: GitHub' --extend-info=assets/mac/info.plist",
     "package:win": "electron-packager . --overwrite --platform=win32 --arch=ia32 --out=out --icon=assets/app-icon/win/icon.ico",

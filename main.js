@@ -7,7 +7,9 @@ const {
   CharacterSet,
   BreakLine,
 } = require("node-thermal-printer");
+const { PrismaClient } = require("@prisma/client");
 
+const prisma = new PrismaClient();
 let mainWindow;
 app.setName("Printing Service");
 
@@ -104,8 +106,8 @@ const helper = {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 600,
-    height: 480,
+    width: 650,
+    height: 500,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       enableRemoteModule: false,
@@ -122,7 +124,14 @@ function createWindow() {
     mainWindow = null;
   });
 
-  mainWindow.webContents.on("did-finish-load", () => {});
+  mainWindow.webContents.on("did-finish-load", async () => {
+    mainWindow.webContents.getPrintersAsync().then((printers) => {
+      mainWindow.webContents.send("printersList", printers);
+    });
+    const settings = await prisma.setting.findFirst();
+    const printers = await prisma.printer.findMany();
+    mainWindow.webContents.send("availableSettings", { settings, printers });
+  });
 }
 
 app.on("ready", () => {
@@ -139,12 +148,6 @@ app.on("activate", function () {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
-});
-
-ipcMain.on("getPrinters", (event) => {
-  mainWindow.webContents.getPrintersAsync().then((printers) => {
-    event.reply("printersList", printers);
-  });
 });
 
 ipcMain.handle("print-content", async (event, data) => {
@@ -255,5 +258,51 @@ ipcMain.handle("print-content", async (event, data) => {
     mainWindow?.webContents.send("printedContent", data?.round?.id);
   } catch (error) {
     console.error("Print failed:", error);
+  }
+});
+
+ipcMain.handle("add-printer", async (event, printer) => {
+  const { id } = printer;
+  let result;
+  if (id) {
+    result = await prisma.printer.update({
+      data: printer,
+      where: { id },
+    });
+  } else {
+    result = await prisma.printer.create({
+      data: printer,
+    });
+  }
+  if (result) {
+    mainWindow?.webContents.send("recordSaved", { type: "printer", result });
+  }
+});
+
+ipcMain.handle("delete-printer", async (event, printerId) => {
+  const result = await prisma.printer.delete({ where: { id: printerId } });
+  if (result) {
+    mainWindow?.webContents.send("recordSaved", {
+      type: "printer-deleted",
+      result: printerId,
+    });
+  }
+});
+
+ipcMain.handle("save-settings", async (event, settings) => {
+  const row = await prisma.setting.findFirst();
+  let result;
+  if (row) {
+    result = await prisma.setting.update({
+      data: settings,
+      where: { id: row.id },
+    });
+  } else {
+    result = await prisma.setting.create({
+      data: settings,
+    });
+  }
+  if (result) {
+    mainWindow?.webContents.send("recordSaved", { type: "settings", result });
   }
 });
