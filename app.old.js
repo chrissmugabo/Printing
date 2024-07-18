@@ -1,5 +1,4 @@
 const { createApp, ref, computed, onMounted, nextTick, onBeforeMount } = Vue;
-const { addPrinter, saveSettings } = require("./api");
 const generateFormData = (obj) => {
   const formData = new FormData();
   for (let key in obj) {
@@ -14,10 +13,8 @@ const generateFormData = (obj) => {
 
 const App = {
   setup() {
-    const displayMode = ref("PRINTERS_VIEW"); // PRINTERS_VIEW or FORM_VIEW
     const appSettings = ref({});
     const printers = ref([]);
-    const activePrinters = ref([]);
     const printerIpAddress = ref("");
     const printerPort = ref("");
     const printerType = ref("EPSON");
@@ -112,10 +109,40 @@ const App = {
       });
     });
 
-    function getBranches() {
+    function setUrl() {
+      localStorage.setItem("url", url.value);
       axios.get(url.value + "/api/pos/pos-branches").then((response) => {
         branches.value = response.data.branches;
       });
+    }
+    function setBranch() {
+      const row = branches.value.find(
+        (_branch) => _branch.id == choosenBranchId.value
+      );
+      if (row) {
+        branch.value = row;
+        localStorage.setItem("branch", JSON.stringify(row));
+        localStorage.setItem(
+          "__printing_content",
+          JSON.stringify(content.value)
+        );
+        localStorage.setItem("printer_type", printerType.value);
+        localStorage.setItem("printer_interface", printerInterface.value);
+        if (printerIpAddress.value) {
+          localStorage.setItem("printer_ip_address", printerIpAddress.value);
+          localStorage.removeItem("printer_port");
+          printerPort.value = "";
+        } else {
+          localStorage.setItem("printer_port", printerPort.value);
+          localStorage.removeItem("printer_ip_address");
+          printerIpAddress.value = "";
+        }
+        setTimeout(() => {
+          fetchInvoices();
+        }, 250);
+      } else {
+        localStorage.removeItem("branch");
+      }
     }
 
     function fetchInvoices() {
@@ -172,37 +199,18 @@ const App = {
       }, 2000);
     }
 
+    function setPrinter(event) {
+      if (event.target) {
+        localStorage.setItem("printer", event.target.value);
+      }
+    }
+
     function resetSettings() {
       clearInterval(printInterval.value);
       branch.value = {};
       localStorage.removeItem("branch");
       localStorage.removeItem("printer");
       selectedPrinter.value = "";
-    }
-
-    function setPrinter() {
-      const printer = {
-        type: printerType.value,
-        ip: printerIpAddress.value,
-        port: printerPort.value,
-        interface: printerInterface.value,
-        content: JSON.stringify(content.value),
-      };
-      const result = addPrinter(printer);
-      console.log(result);
-    }
-
-    function updateSettings() {
-      const row = branches.value.find(
-        (_branch) => _branch.id == choosenBranchId.value
-      );
-      if (row) {
-        const result = saveSettings({
-          branch_name: row.name,
-          base_url: url.value,
-          branch_id: row.id,
-        });
-      }
     }
 
     return {
@@ -222,13 +230,11 @@ const App = {
       printerType,
       printerInterface,
       printerPort,
-      displayMode,
+      setUrl,
+      setBranch,
       fetchInvoices,
-      getBranches,
-      resetSettings,
       setPrinter,
-      activePrinters,
-      updateSettings,
+      resetSettings,
     };
   },
 };

@@ -609,3 +609,7 @@ th > .form-check input {
     60% {color: #06a90e}
     100% {color: #06a90e} */
 }
+
+.w-100 {
+  width: 100 !important;
+}
