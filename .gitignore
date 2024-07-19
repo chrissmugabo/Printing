@@ -3,6 +3,7 @@ node_modules
 /dist
 /prisma/settings.db
 /prisma/migrations
+/prisma/settings.db-journal
 
 # local env files
 .env.local
