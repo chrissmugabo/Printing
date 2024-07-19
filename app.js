@@ -110,24 +110,8 @@ const App = {
             id: settings.branch_id,
             name: settings.branch_name,
           };
-          const keys = [
-            "site_address",
-            "site_name",
-            "currency",
-            "site_logo",
-            "contact_one",
-            "app_phone",
-            "app_email",
-            "app_tin",
-            "momo_code",
-            "airtel_code",
-            "disabled_direct_print",
-          ];
           axios
-            .post(
-              settings.base_url + "/api/pos/frontend/preloaders",
-              generateFormData({ keys })
-            )
+            .post(settings.base_url + "/api/pos/frontend/preloaders", {})
             .then((response) => {
               appSettings.value = response?.data?.result;
               if (activePrinters.value.length) {

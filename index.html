@@ -87,7 +87,8 @@
                 class="btn btn-success"
                 style="margin-left: auto"
                 type="button"
-                @click="displayMode=FORM_VIEW"
+                @click="showPrinterForm()"
+                v-if="activePrinters.length"
               >
                 Add New
               </button>
@@ -211,7 +212,7 @@
               style="margin-top: 1rem"
             >
               <label class="col-3"></label>
-              <div class="col-4">
+              <div class="col-9 d-flex">
                 <button
                   type="button"
                   class="btn btn-primary"
@@ -237,7 +238,7 @@
               <button
                 type="button"
                 class="btn btn-primary"
-                @click="showPrinterForm"
+                @click="showPrinterForm()"
               >
                 Add Printers
               </button>

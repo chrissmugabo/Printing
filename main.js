@@ -168,7 +168,7 @@ ipcMain.handle("print-content", async (event, data) => {
   if (data.ip) {
     options.interface = `tcp://${data.ip}`;
   } else {
-    options.interface = `\\.\${data.port}`;
+    options.interface = `\\.\\${data.port}`;
   }
   const printer = new ThermalPrinter(options);
   const orderDate = `${data?.order?.system_date} ${data?.order?.order_time}`;
@@ -221,26 +221,24 @@ ipcMain.handle("print-content", async (event, data) => {
     printer.drawLine();
 
     printer.tableCustom([
-      { text: "Item", align: "LEFT", width: 0.5 },
+      { text: "Item", align: "LEFT", width: 0.45 },
       { text: "Qty", align: "CENTER", width: 0.1 },
       { text: "Price", align: "CENTER", width: 0.2 },
-      { text: "Total", align: "RIGHT", width: 0.2 },
+      { text: "Total", align: "RIGHT", width: 0.25 },
     ]);
 
     data?.items.forEach((item) => {
       printer.tableCustom([
-        { text: item.name, align: "LEFT", width: 0.5 },
+        { text: item.name, align: "LEFT", width: 0.45 },
         { text: item.quantity, align: "CENTER", width: 0.1 },
         { text: helper.formatMoney(item.price), align: "CENTER", width: 0.2 },
-        { text: helper.formatMoney(item.amount), align: "RIGHT", width: 0.2 },
+        { text: helper.formatMoney(item.amount), align: "RIGHT", width: 0.25 },
       ]);
     });
 
     printer.drawLine();
 
     printer.alignRight();
-    //printer.println("Subtotal: $20.00");
-    //printer.println("Tax: $2.00");
     printer.setTextDoubleWidth();
     printer.println(`Total: ${helper.formatMoney(data?.order?.grand_total)}`);
     printer.setTextNormal();
@@ -281,13 +279,12 @@ ipcMain.handle("add-printer", async (event, printer) => {
 });
 
 ipcMain.handle("delete-printer", async (event, printerId) => {
-  const result = await prisma.printer.delete({ where: { id: printerId } });
-  if (result) {
-    mainWindow?.webContents.send("recordSaved", {
-      type: "printer-deleted",
-      result: printerId,
-    });
-  }
+  await prisma.printer.delete({ where: { id: printerId } });
+
+  mainWindow?.webContents.send("recordSaved", {
+    type: "printer-deleted",
+    result: printerId,
+  });
 });
 
 ipcMain.handle("save-settings", async (event, settings) => {
