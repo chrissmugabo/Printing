@@ -198,15 +198,13 @@ ipcMain.handle("print-content", async (event, data) => {
         `Invoice #: ${helper.generateVoucherNo(data?.order?.id)}`
       );
     }
-    printer.println(`Customer: ${data?.order?.client?.name || "Walk-In"}`);
+    printer.println(`Customer: ${data?.order?.client || "Walk-In"}`);
     printer.tableCustom([
       {
-        text: `Served By: ${
-          data?.order?.waiter?.last_name || data?.order?.waiter?.name
-        }`,
+        text: `Served By: ${data?.order?.waiter}`,
         align: "LEFT",
       },
-      { text: `Table No: ${data?.order?.table?.name}`, align: "RIGHT" },
+      { text: `Table No: ${data?.order?.table_name}`, align: "RIGHT" },
     ]);
 
     printer.tableCustom([

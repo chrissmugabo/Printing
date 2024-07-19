@@ -39,20 +39,20 @@ const App = {
     });
 
     const invoicesPrinter = computed(() => {
-      return activePrinters.value.find((printer) =>
-        JSON.parse(printer.content).incudes("I")
+      return activePrinters.value.find(
+        (printer) => JSON.parse(printer.content).indexOf("I") !== -1
       );
     });
 
     const kitchenOrdersPrinter = computed(() => {
-      return activePrinters.value.find((printer) =>
-        JSON.parse(printer.content).incudes("K")
+      return activePrinters.value.find(
+        (printer) => JSON.parse(printer.content).indexOf("K") !== -1
       );
     });
 
     const bardOrdersPrinter = computed(() => {
-      return activePrinters.value.find((printer) =>
-        JSON.parse(printer.content).incudes("B")
+      return activePrinters.value.find(
+        (printer) => JSON.parse(printer.content).indexOf("B") !== -1
       );
     });
 
