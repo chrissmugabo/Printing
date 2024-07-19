@@ -1803,7 +1803,7 @@ th > .form-check input {
 }
 
 .w-100 {
-  width: 100 !important;
+  width: 100% !important;
 }
 .btn-close {
   -webkit-box-sizing: content-box;
@@ -2260,4 +2260,65 @@ th > .form-check input {
   padding-left: calc(var(--bs-gutter-x) * 0.5);
   margin-right: auto;
   margin-left: auto;
+}
+
+.zf-notification-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100000;
+  margin: 0 auto;
+  color: #fff;
+  max-width: 500px;
+}
+.zf-notification-container svg {
+  height: 1em;
+  width: 1em;
+  margin-right: 0.2em;
+  margin-left: 0.2em;
+  fill: currentColor;
+}
+.zf-notification-container svg.svg-icon {
+  height: 1.6em;
+  width: 1.6em;
+  margin-top: 5px;
+}
+.zf-notification-container .message-container {
+  display: inline-flex;
+  padding: 10px 13px;
+  margin: 0;
+  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+  box-shadow: 0 2px 1px rgba(0, 0, 0, 0.2);
+  align-items: center;
+}
+.zf-notification-container .message-container.danger {
+  background-color: #ba4239;
+}
+.zf-notification-container .message-container.success {
+  background-color: #1ee0ac;
+}
+.zf-notification-container .message-container.info {
+  background-color: #079bb2;
+}
+.zf-notification-container .message-container.warning {
+  background-color: #c3970b;
+}
+.zf-notification-container .msg {
+  margin: 0 8px;
+  max-width: 325px;
+  text-align: left;
+  line-height: 1.3;
+}
+.zf-notification-container .icon-remove {
+  cursor: pointer;
+  color: #fff;
+  font-size: 10px;
+}
+.bounce-enter-active {
+  animation: bounce-in 0.5s;
+}
+.bounce-leave-active {
+  animation: bounce-in 0.5s reverse;
 }

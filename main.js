@@ -8,6 +8,7 @@ const {
   BreakLine,
 } = require("node-thermal-printer");
 const { PrismaClient } = require("@prisma/client");
+const argon2 = require("argon2");
 
 const prisma = new PrismaClient();
 let mainWindow;
@@ -128,9 +129,6 @@ function createWindow() {
     mainWindow.webContents.getPrintersAsync().then((printers) => {
       mainWindow.webContents.send("printersList", printers);
     });
-    const settings = await prisma.setting.findFirst();
-    const printers = await prisma.printer.findMany();
-    mainWindow.webContents.send("availableSettings", { settings, printers });
   });
 }
 
@@ -152,6 +150,12 @@ app.on("activate", function () {
 
 app.on("before-quit", async () => {
   await prisma.$disconnect();
+});
+
+ipcMain.on("authenticated", async (event) => {
+  const settings = await prisma.setting.findFirst();
+  const printers = await prisma.printer.findMany();
+  event.reply("availableSettings", { settings, printers });
 });
 
 ipcMain.handle("print-content", async (event, data) => {
@@ -303,4 +307,10 @@ ipcMain.handle("save-settings", async (event, settings) => {
   if (result) {
     mainWindow?.webContents.send("recordSaved", { type: "settings", result });
   }
+});
+
+ipcMain.handle("login-action", async (event, password) => {
+  const user = await prisma.user.findFirst();
+  const response = await argon2.verify(user.password, password);
+  mainWindow?.webContents.send("authResponse", response);
 });

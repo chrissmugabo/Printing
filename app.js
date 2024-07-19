@@ -29,6 +29,13 @@ const App = {
     const branch = ref({});
     const printInterval = ref(null);
     const choosenBranchId = ref();
+    const authenticated = ref(false);
+    const isLoading = ref(false);
+    const password = ref("");
+    const invalidPasword = ref(false);
+    const isAuthenticating = ref(false);
+    const hasFlashMessage = ref(false);
+    const message = ref();
 
     const roundsUrl = computed(() => {
       if (branch.value && url.value) {
@@ -57,12 +64,53 @@ const App = {
     });
 
     onBeforeMount(() => {
+      axios.interceptors.request.use(
+        (config) => {
+          isLoading.value = true;
+          return config;
+        },
+        (error) => {
+          isLoading.value = false;
+          return Promise.reject(error);
+        }
+      );
+
+      axios.interceptors.response.use(
+        (response) => {
+          isLoading.value = false;
+          return response;
+        },
+        (error) => {
+          isLoading.value = false;
+          return Promise.reject(error);
+        }
+      );
+
+      window.ipcRenderer.on("authResponse", (event, response) => {
+        authenticated.value = response;
+        if (response) {
+          window.ipcRenderer.send("authenticated");
+          toggleFlashMessage({
+            type: "success",
+            text: "Authenticated successfully",
+          });
+        } else {
+          toggleFlashMessage({
+            type: "danger",
+            text: "Invalid Password. Try again",
+          });
+          invalidPasword.value = true;
+        }
+      });
+
       window.ipcRenderer.on("printersList", (event, _printers) => {
         printers.value = _printers;
       });
+
       window.ipcRenderer.on("printedContent", (event, id) => {
         axios.get(`${url.value}/api/pos/update-printed-round/${id}`);
       });
+
       window.ipcRenderer.on("recordSaved", (event, data) => {
         clearInterval(printInterval.value);
         const { type, result } = data;
@@ -100,6 +148,7 @@ const App = {
         }
         fetchInvoices();
       });
+
       window.ipcRenderer.on("availableSettings", (event, data) => {
         const { settings, printers } = data;
         activePrinters.value = printers;
@@ -115,7 +164,7 @@ const App = {
             .then((response) => {
               appSettings.value = response?.data?.result;
               if (activePrinters.value.length) {
-                fetchInvoices();
+                //fetchInvoices();
               }
             });
         }
@@ -182,7 +231,7 @@ const App = {
       printerInterface.value = "TCP";
     }
 
-    async function setPrinter() {
+    function setPrinter() {
       const printer = {
         name: selectedPrinter.value,
         type: printerType.value,
@@ -197,7 +246,7 @@ const App = {
       window.ipcRenderer.invoke("add-printer", printer);
     }
 
-    async function updateSettings() {
+    function updateSettings() {
       const row = branches.value.find(
         (_branch) => _branch.id == choosenBranchId.value
       );
@@ -229,12 +278,20 @@ const App = {
       displayMode.value = "PRINTERS_VIEW";
     }
 
-    async function deletePrinter(printer) {
+    function deletePrinter(printer) {
       if (
         confirm(`Are you sure you want to remove printer ${printer?.name}?`)
       ) {
         window.ipcRenderer.invoke("delete-printer", printer.id);
       }
+    }
+
+    function handleLogin() {
+      invalidPasword.value = false;
+      isAuthenticating.value = true;
+      window.ipcRenderer.invoke("login-action", password.value).then(() => {
+        isAuthenticating.value = false;
+      });
     }
 
     function showPrinterContent(content) {
@@ -270,7 +327,15 @@ const App = {
       return result;
     }
 
+    function toggleFlashMessage(msg) {
+      hasFlashMessage.value = !hasFlashMessage.value;
+      message.value = msg;
+      setTimeout(() => (hasFlashMessage.value = !hasFlashMessage.value), 3000);
+    }
+
     return {
+      isAuthenticating,
+      authenticated,
       appSettings,
       printers,
       selectedPrinter,
@@ -292,6 +357,11 @@ const App = {
       bardOrdersPrinter,
       fetchInvoices,
       getBranches,
+      invalidPasword,
+      hasFlashMessage,
+      toggleFlashMessage,
+      message,
+      password,
       resetForm,
       setPrinter,
       activePrinters,
@@ -300,6 +370,8 @@ const App = {
       deletePrinter,
       showPrinterContent,
       handleCancel,
+      handleLogin,
+      isLoading,
     };
   },
 };
