@@ -5,6 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Printing Service</title>
     <link rel="stylesheet" href="assets/css/custom.min.css?ver=1.0.4" />
+    <style>
+      .printer-container {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 50px;
+        height: 50px;
+      }
+      .printer-icon {
+        width: 40px;
+        height: 40px;
+        color: #333;
+      }
+
+      .printing-indicator {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        width: 10px;
+        height: 10px;
+        background-color: green;
+        border-radius: 50%;
+        animation: vibrate 0.3s linear infinite;
+      }
+
+      @keyframes vibrate {
+        0% {
+          transform: translate(0, 0);
+        }
+        25% {
+          transform: translate(1px, -1px);
+        }
+        50% {
+          transform: translate(0, 1px);
+        }
+        75% {
+          transform: translate(-1px, -1px);
+        }
+        100% {
+          transform: translate(0, 0);
+        }
+      }
+    </style>
     <script src="assets/js/vue.global.js"></script>
   </head>
   <body>
@@ -27,7 +71,7 @@
             </div>
           </div>
           <div class="col-4">
-            <div class="form-group" v-if="!choosenBranchId">
+            <div class="form-group" v-if="!choosenBranchId && !branches.length">
               <label style="visibility: hidden; width: 100%">Button</label>
               <button
                 type="button"
@@ -35,7 +79,7 @@
                 @click="getBranches()"
                 :disabled="!url"
               >
-                Get Branches
+                Get Branches {{ choosenBranchId }}
               </button>
             </div>
             <div class="align-items-center" v-else-if="branches.length">
@@ -257,6 +301,19 @@
                 v-for="printer in activePrinters"
                 :key="printer.id"
               >
+                <div class="printer-container" v-if="printInterval">
+                  <svg
+                    class="printer-icon"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M19 7h-1V3H6v4H5C3.89 7 3 7.89 3 9v8h4v4h10v-4h4V9c0-1.11-.89-2-2-2zM8 4h8v3H8V4zm7 14H9v-4h6v4zm3-4h-1v-1H7v1H6v-5c0-.55.45-1 1-1h10c.55 0 1 .45 1 1v5z"
+                    />
+                  </svg>
+                  <div class="printing-indicator"></div>
+                </div>
                 <div
                   style="
                     display: flex;

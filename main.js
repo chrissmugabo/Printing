@@ -229,7 +229,7 @@ ipcMain.handle("print-content", async (event, data) => {
 
     data?.items.forEach((item) => {
       printer.tableCustom([
-        { text: item.name, align: "LEFT", width: 0.55 },
+        { text: item.name, align: "LEFT", width: 0.5 },
         { text: item.quantity, align: "CENTER", width: 0.1 },
         { text: helper.formatMoney(item.price), align: "CENTER", width: 0.18 },
         { text: helper.formatMoney(item.amount), align: "RIGHT", width: 0.22 },
