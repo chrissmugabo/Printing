@@ -28,17 +28,32 @@ const App = {
     const url = ref("");
     const branch = ref({});
     const printInterval = ref(null);
-    const latestPrintedRoundId = ref(null);
     const choosenBranchId = ref();
+
     const roundsUrl = computed(() => {
-      const printingContent = content.value.join("");
-      if (branch.value && content.value) {
-        const url = latestPrintedRoundId.value
-          ? `next-printable-round?latest=${latestPrintedRoundId.value}&branch_id=${branch?.value?.id}&content=${printingContent}`
-          : `next-printable-round?branch_id=${branch?.value?.id}&content=${printingContent}`;
+      if (branch.value && url.value) {
+        const url = `next-printable-round?branch_id=${branch?.value?.id}`;
         return url;
       }
       return null;
+    });
+
+    const invoicesPrinter = computed(() => {
+      return activePrinters.value.find((printer) =>
+        JSON.parse(printer.content).incudes("I")
+      );
+    });
+
+    const kitchenOrdersPrinter = computed(() => {
+      return activePrinters.value.find((printer) =>
+        JSON.parse(printer.content).incudes("K")
+      );
+    });
+
+    const bardOrdersPrinter = computed(() => {
+      return activePrinters.value.find((printer) =>
+        JSON.parse(printer.content).incudes("B")
+      );
     });
 
     onBeforeMount(() => {
@@ -53,8 +68,18 @@ const App = {
         const { type, result } = data;
         switch (type) {
           case "printer":
-            activePrinters.value.push(result);
+            if (selectedPrinterId.value) {
+              const index = activePrinters.value.findIndex(
+                (printer) => printer.id == selectedPrinterId.value
+              );
+              if (index !== -1) {
+                activePrinters.value[index] = result;
+              }
+            } else {
+              activePrinters.value.push(result);
+            }
             displayMode.value = "PRINTERS_VIEW";
+            resetForm();
             break;
           case "settings":
             branch.value = {
@@ -125,32 +150,52 @@ const App = {
           axios
             .get(url.value + "/api/pos/" + roundsUrl.value)
             .then((response) => {
-              const round = response.data.round;
-              const order = response.data.order;
-              const items = response.data.items;
-              const data = {
-                printer: selectedPrinter.value,
-                type: printerType.value,
-                interface: printerInterface.value,
-                port: printerPort.value,
-                ip: printerIpAddress.value,
-                round: round,
-                items: items,
-                order: order,
-                settings: { ...appSettings.value },
-              };
-              window.ipcRenderer.invoke("print-content", data).then(() => {
-                console.log("Print request sent");
-              });
+              const { status, round, order, items } = response.data;
+              if (status) {
+                let printer;
+                if (round.destination === "KITCHEN") {
+                  printer = kitchenOrdersPrinter.value;
+                } else if (round.destination === "BAR") {
+                  printer = bardOrdersPrinter.value;
+                } else {
+                  printer = invoicesPrinter.value;
+                }
+                if (printer) {
+                  const data = {
+                    printer: printer.name,
+                    type: printer.type,
+                    interface: printer.interface,
+                    port: printer.port,
+                    ip: printer.ip,
+                    round: round,
+                    items: items,
+                    order: order,
+                    settings: { ...appSettings.value },
+                  };
+
+                  window.ipcRenderer.invoke("print-content", data).then(() => {
+                    console.log("Print request sent");
+                  });
+                }
+              } else {
+                if (round) {
+                  axios.get(
+                    `${url.value}/api/pos/update-printed-round/${round.id}`
+                  );
+                }
+              }
             });
         }, 4000);
       }
     }
 
     function resetForm() {
-      clearInterval(printInterval.value);
-      branch.value = {};
+      selectedPrinterId.value = null;
       selectedPrinter.value = "";
+      printerIpAddress.value = "";
+      printerPort.value = "";
+      printerType.value = "EPSON";
+      printerInterface.value = "TCP";
     }
 
     async function setPrinter() {
@@ -184,7 +229,7 @@ const App = {
 
     function showPrinterForm(printer = null) {
       if (printer) {
-        selectedPrinterId.value.id = printer.id;
+        selectedPrinterId.value = printer.id;
         selectedPrinter.value = printer.name;
         printerType.value = printer.type;
         printerIpAddress.value = printer.ip;
@@ -195,12 +240,50 @@ const App = {
       displayMode.value = "FORM_VIEW";
     }
 
+    function handleCancel() {
+      resetForm();
+      displayMode.value = "PRINTERS_VIEW";
+    }
+
     async function deletePrinter(printer) {
       if (
         confirm(`Are you sure you want to remove printer ${printer?.name}?`)
       ) {
         window.ipcRenderer.invoke("delete-printer", printer.id);
       }
+    }
+
+    function showPrinterContent(content) {
+      const abbr = JSON.parse(content).join("");
+      const len = String(abbr).length;
+      let result;
+      if (len === 1) {
+        switch (abbr) {
+          case "K":
+            result = "Kitchen Orders";
+            break;
+          case "B":
+            result = "Bard Orders";
+            break;
+          case "I":
+            result = "Invoices";
+            break;
+          default:
+            break;
+        }
+      } else if (len === 2) {
+        if (abbr === "KB" || abbr === "BK") {
+          result = "Kitchen & Bar Orders";
+        } else if (abbr === "KI" || abbr === "IK") {
+          result = "Kitchen Orders & Invoices";
+        } else if (abbr === "BI" || abbr === "IB") {
+          result = "BAR & Invoices";
+        }
+      } else {
+        result = "All Orders and Invoices";
+      }
+
+      return result;
     }
 
     return {
@@ -212,7 +295,6 @@ const App = {
       url,
       branch,
       printInterval,
-      latestPrintedRoundId,
       choosenBranchId,
       roundsUrl,
       printerIpAddress,
@@ -221,6 +303,9 @@ const App = {
       printerPort,
       displayMode,
       selectedPrinterId,
+      invoicesPrinter,
+      kitchenOrdersPrinter,
+      bardOrdersPrinter,
       fetchInvoices,
       getBranches,
       resetForm,
@@ -229,6 +314,8 @@ const App = {
       updateSettings,
       showPrinterForm,
       deletePrinter,
+      showPrinterContent,
+      handleCancel,
     };
   },
 };

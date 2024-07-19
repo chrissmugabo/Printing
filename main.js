@@ -150,6 +150,10 @@ app.on("activate", function () {
   }
 });
 
+app.on("before-quit", async () => {
+  await prisma.$disconnect();
+});
+
 ipcMain.handle("print-content", async (event, data) => {
   const options = {
     type: PrinterTypes[data.type], // or PrinterTypes.STAR
@@ -167,10 +171,9 @@ ipcMain.handle("print-content", async (event, data) => {
     options.interface = `\\.\${data.port}`;
   }
   const printer = new ThermalPrinter(options);
-
+  const orderDate = `${data?.order?.system_date} ${data?.order?.order_time}`;
   try {
     await printer.isPrinterConnected();
-    printer.setPrinterDriver(Object);
     printer.alignCenter();
     printer.setTypeFontA();
     printer.setTextDoubleHeight();
@@ -208,11 +211,11 @@ ipcMain.handle("print-content", async (event, data) => {
 
     printer.tableCustom([
       {
-        text: `Date: ${helper.formatDate(data?.order?.order_date)}`,
+        text: `Date: ${helper.formatDate(orderDate)}`,
         align: "LEFT",
       },
       {
-        text: `Time: ${helper.formatTime(data?.order?.order_date)}`,
+        text: `Time: ${helper.formatTime(orderDate)}`,
         align: "RIGHT",
       },
     ]);
