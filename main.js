@@ -168,7 +168,7 @@ ipcMain.handle("print-content", async (event, data) => {
   if (data.ip) {
     options.interface = `tcp://${data.ip}`;
   } else {
-    options.interface = `\\.\\${data.port}`;
+    options.interface = `\\\\.\\${data.port}`;
   }
   const printer = new ThermalPrinter(options);
   const orderDate = `${data?.order?.system_date} ${data?.order?.order_time}`;
@@ -221,18 +221,18 @@ ipcMain.handle("print-content", async (event, data) => {
     printer.drawLine();
 
     printer.tableCustom([
-      { text: "Item", align: "LEFT", width: 0.45 },
+      { text: "Item", align: "LEFT", width: 0.5 },
       { text: "Qty", align: "CENTER", width: 0.1 },
-      { text: "Price", align: "CENTER", width: 0.2 },
-      { text: "Total", align: "RIGHT", width: 0.25 },
+      { text: "Price", align: "CENTER", width: 0.18 },
+      { text: "Total", align: "RIGHT", width: 0.22 },
     ]);
 
     data?.items.forEach((item) => {
       printer.tableCustom([
-        { text: item.name, align: "LEFT", width: 0.45 },
+        { text: item.name, align: "LEFT", width: 0.55 },
         { text: item.quantity, align: "CENTER", width: 0.1 },
-        { text: helper.formatMoney(item.price), align: "CENTER", width: 0.2 },
-        { text: helper.formatMoney(item.amount), align: "RIGHT", width: 0.25 },
+        { text: helper.formatMoney(item.price), align: "CENTER", width: 0.18 },
+        { text: helper.formatMoney(item.amount), align: "RIGHT", width: 0.22 },
       ]);
     });
 
