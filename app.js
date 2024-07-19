@@ -164,7 +164,7 @@ const App = {
             .then((response) => {
               appSettings.value = response?.data?.result;
               if (activePrinters.value.length) {
-                //fetchInvoices();
+                fetchInvoices();
               }
             });
         }
@@ -218,7 +218,7 @@ const App = {
                 }
               }
             });
-        }, 4000);
+        }, 6000);
       }
     }
 
