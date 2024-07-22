@@ -146,11 +146,16 @@ const App = {
           default:
             break;
         }
+        toggleFlashMessage({
+          type: "success",
+          text: "Record saved successfully",
+        });
         fetchInvoices();
       });
 
       window.ipcRenderer.on("availableSettings", (event, data) => {
         const { settings, printers } = data;
+        console.log("printers", printers);
         activePrinters.value = printers;
         if (settings && Object.keys(settings).length > 0) {
           url.value = settings.base_url;

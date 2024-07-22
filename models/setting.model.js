@@ -5,7 +5,6 @@ module.exports = (sequelize, DataTypes) => {
   }
   Setting.init(
     {
-      name: DataTypes.STRING,
       branch_id: DataTypes.STRING,
       branch_name: DataTypes.STRING,
       base_url: DataTypes.STRING,

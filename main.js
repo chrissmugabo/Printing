@@ -148,10 +148,13 @@ app.on("activate", function () {
 app.on("before-quit", async () => {});
 
 ipcMain.on("authenticated", async (event) => {
-  const settings = await Setting.findOne({});
-  console.log('settings', settings);
-  const printers = await Printer.findAll();
-  event.reply("availableSettings", { settings, printers });
+  try {
+    const settings = await Setting.findOne({ raw: true });
+    const printers = await Printer.findAll({ raw: true });
+    event.reply("availableSettings", { settings, printers });
+  } catch (error) {
+    console.log("settings", error);
+  }
 });
 
 ipcMain.handle("print-content", async (event, data) => {
