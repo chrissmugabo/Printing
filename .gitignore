@@ -3,10 +3,7 @@ package-lock.json
 yarn.lock
 node_modules
 /dist
-/prisma/settings.db
-/prisma/migrations
-/prisma/settings.db-journal
-
+/release-builds
 # local env files
 .env.local
 .env.*.local

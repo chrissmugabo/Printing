@@ -7,10 +7,7 @@ const {
   CharacterSet,
   BreakLine,
 } = require("node-thermal-printer");
-const { PrismaClient } = require("@prisma/client");
-const argon2 = require("argon2");
-
-const prisma = new PrismaClient();
+const { User, Printer, Setting } = require("./models");
 let mainWindow;
 app.setName("Printing Service");
 
@@ -148,13 +145,12 @@ app.on("activate", function () {
   }
 });
 
-app.on("before-quit", async () => {
-  await prisma.$disconnect();
-});
+app.on("before-quit", async () => {});
 
 ipcMain.on("authenticated", async (event) => {
-  const settings = await prisma.setting.findFirst();
-  const printers = await prisma.printer.findMany();
+  const settings = await Setting.findOne({});
+  console.log('settings', settings);
+  const printers = await Printer.findAll();
   event.reply("availableSettings", { settings, printers });
 });
 
@@ -268,14 +264,9 @@ ipcMain.handle("add-printer", async (event, printer) => {
   const { id } = printer;
   let result;
   if (id) {
-    result = await prisma.printer.update({
-      data: printer,
-      where: { id },
-    });
+    result = await Printer.update(printer, { where: { id } });
   } else {
-    result = await prisma.printer.create({
-      data: printer,
-    });
+    result = await Printer.create(printer);
   }
   if (result) {
     mainWindow?.webContents.send("recordSaved", { type: "printer", result });
@@ -283,8 +274,7 @@ ipcMain.handle("add-printer", async (event, printer) => {
 });
 
 ipcMain.handle("delete-printer", async (event, printerId) => {
-  await prisma.printer.delete({ where: { id: printerId } });
-
+  const row = await Printer.destroy({ where: { id: printerId } });
   mainWindow?.webContents.send("recordSaved", {
     type: "printer-deleted",
     result: printerId,
@@ -292,17 +282,12 @@ ipcMain.handle("delete-printer", async (event, printerId) => {
 });
 
 ipcMain.handle("save-settings", async (event, settings) => {
-  const row = await prisma.setting.findFirst();
+  const row = await Setting.findOne({});
   let result;
   if (row) {
-    result = await prisma.setting.update({
-      data: settings,
-      where: { id: row.id },
-    });
+    result = await Setting.update(settings, { where: { id: row.id } });
   } else {
-    result = await prisma.setting.create({
-      data: settings,
-    });
+    result = await Setting.create(settings);
   }
   if (result) {
     mainWindow?.webContents.send("recordSaved", { type: "settings", result });
@@ -310,7 +295,7 @@ ipcMain.handle("save-settings", async (event, settings) => {
 });
 
 ipcMain.handle("login-action", async (event, password) => {
-  const user = await prisma.user.findFirst();
-  const response = await argon2.verify(user.password, password);
+  const user = await User.findOne({});
+  const response = user.password === password;
   mainWindow?.webContents.send("authResponse", response);
 });
