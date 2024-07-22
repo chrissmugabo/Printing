@@ -14,7 +14,7 @@ function getInstallerConfig () {
   const outPath = path.join(rootPath, 'release-builds')
 
   return Promise.resolve({
-    appDirectory: path.join(outPath, 'printing-service-win32-ia32/'),
+    appDirectory: path.join(outPath, 'printing-service-win32-x64/'),
     authors: 'Tame Apps',
     noMsi: true,
     outputDirectory: path.join(outPath, 'windows-installer'),

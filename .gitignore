@@ -6,6 +6,8 @@ node_modules
 /prisma/settings.db
 /prisma/migrations
 /prisma/settings.db-journal
+/release-builds
+/release-builds/*
 
 # local env files
 .env.local

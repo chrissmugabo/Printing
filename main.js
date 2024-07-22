@@ -8,9 +8,15 @@ const {
   BreakLine,
 } = require("node-thermal-printer");
 const { PrismaClient } = require("@prisma/client");
-const argon2 = require("argon2");
-
-const prisma = new PrismaClient();
+const __dbPath = `file:${path.join(__dirname, 'settings.db')}`;
+console.log(__dbPath)
+const prisma = new PrismaClient({
+  datasources:{
+    db:{
+      url: __dbPath
+    }
+  }
+});
 let mainWindow;
 app.setName("Printing Service");
 
@@ -311,6 +317,6 @@ ipcMain.handle("save-settings", async (event, settings) => {
 
 ipcMain.handle("login-action", async (event, password) => {
   const user = await prisma.user.findFirst();
-  const response = await argon2.verify(user.password, password);
+  const response = user.password === password;
   mainWindow?.webContents.send("authResponse", response);
 });

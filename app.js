@@ -160,9 +160,9 @@ const App = {
             name: settings.branch_name,
           };
           axios
-            .post(settings.base_url + "/api/pos/frontend/preloaders", {})
+            .get(settings.base_url + "/api/preloaders")
             .then((response) => {
-              appSettings.value = response?.data?.result;
+              appSettings.value = response?.data;
               if (activePrinters.value.length) {
                 fetchInvoices();
               }

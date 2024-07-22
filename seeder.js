@@ -1,17 +1,10 @@
 const { PrismaClient } = require("@prisma/client");
-const argon2 = require("argon2");
 const prisma = new PrismaClient();
 
 async function main() {
   console.log(`Start seeding ...`);
-  const hash = await argon2.hash("tame123");
-  const user = await prisma.user.create({
-    data: {
-      email: "webmaster@gmail.com",
-      password: hash,
-      name: "Super Admin",
-    },
-  });
+  const user = await prisma.user.findMany();
+  console.log(user)
 }
 
 main()
