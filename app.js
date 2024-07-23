@@ -135,7 +135,7 @@ const App = {
               name: result.branch_name,
             };
             break;
-          case "delete-printer":
+          case "printer-deleted":
             const index = activePrinters.value.findIndex(
               (printer) => printer.id == result
             );
@@ -146,6 +146,10 @@ const App = {
           default:
             break;
         }
+        toggleFlashMessage({
+          type: "success",
+          text: "Database updated successfully",
+        });
         fetchInvoices();
       });
 

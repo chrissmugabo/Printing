@@ -290,7 +290,6 @@ ipcMain.handle("add-printer", async (event, printer) => {
 
 ipcMain.handle("delete-printer", async (event, printerId) => {
   await prisma.printer.delete({ where: { id: printerId } });
-
   mainWindow?.webContents.send("recordSaved", {
     type: "printer-deleted",
     result: printerId,
