@@ -319,8 +319,12 @@ ipcMain.handle("print-content", async (event, data) => {
     printer.cut();
 
     await printer.execute();
-    mainWindow?.webContents.send("printedContent", data?.round?.id);
+    mainWindow?.webContents.send("printedContent", {
+      latest: data?.round?.id,
+      content: data?.content,
+    });
   } catch (error) {
+    mainWindow?.webContents.send("retryPrinting", data);
     console.error("Print failed:", error);
   }
 });

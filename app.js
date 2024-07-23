@@ -107,8 +107,14 @@ const App = {
         printers.value = _printers;
       });
 
-      window.ipcRenderer.on("printedContent", (event, id) => {
-        axios.get(`${url.value}/api/pos/update-printed-round/${id}`);
+      window.ipcRenderer.on("printedContent", (event, meta) => {
+        fetchInvoices(meta);
+      });
+
+      window.ipcRenderer.on("retryPrinting", (event, data) => {
+        window.ipcRenderer.invoke("print-content", data).then(() => {
+          console.log("Print retry sent...");
+        });
       });
 
       window.ipcRenderer.on("recordSaved", (event, data) => {
@@ -179,48 +185,59 @@ const App = {
       });
     }
 
-    function fetchInvoices() {
+    function fetchInvoices(meta = null) {
       if (roundsUrl.value && activePrinters.value.length) {
-        printInterval.value = setInterval(() => {
-          axios
-            .get(url.value + "/api/pos/" + roundsUrl.value)
-            .then((response) => {
-              const { status, round, order, items } = response.data;
-              if (status) {
-                let printer;
-                if (round.destination === "KITCHEN") {
-                  printer = kitchenOrdersPrinter.value;
-                } else if (round.destination === "BAR") {
-                  printer = bardOrdersPrinter.value;
-                } else {
-                  printer = invoicesPrinter.value;
-                }
-                if (printer) {
-                  const data = {
-                    printer: printer.name,
-                    type: printer.type,
-                    interface: printer.interface,
-                    port: printer.port,
-                    ip: printer.ip,
-                    round: round,
-                    items: items,
-                    order: order,
-                    settings: { ...appSettings.value },
-                  };
-
-                  window.ipcRenderer.invoke("print-content", data).then(() => {
-                    console.log("Print request sent");
-                  });
-                }
-              } else {
-                if (round) {
-                  axios.get(
-                    `${url.value}/api/pos/update-printed-round/${round.id}`
-                  );
-                }
-              }
-            });
-        }, 6000);
+        let _url = `${url.value}/api/pos/${roundsUrl.value}`;
+        if (meta) {
+          if (meta.latest) {
+            _url += `&latest=${meta.latest}`;
+          }
+          if (meta.content) {
+            _url += `&content=${meta.content}`;
+          }
+        }
+        axios.get(_url).then((response) => {
+          const { status, round, order, items } = response.data;
+          if (status) {
+            let printer;
+            if (round.destination === "KITCHEN") {
+              printer = kitchenOrdersPrinter.value;
+            } else if (round.destination === "BAR") {
+              printer = bardOrdersPrinter.value;
+            } else {
+              printer = invoicesPrinter.value;
+            }
+            if (printer) {
+              const _content = JSON.parse(printer.content);
+              const data = {
+                printer: printer.name,
+                type: printer.type,
+                interface: printer.interface,
+                port: printer.port,
+                ip: printer.ip,
+                round: round,
+                items: items,
+                order: order,
+                settings: { ...appSettings.value },
+                content: _content.join(""),
+              };
+              window.ipcRenderer
+                .invoke("print-content", data)
+                .then(() => {
+                  console.log("Print request sent...");
+                })
+                .catch((error) => {
+                  console.error("Catched Error:", error);
+                });
+            }
+          } else {
+            if (round) {
+              axios.get(
+                `${url.value}/api/pos/update-printed-round/${round.id}`
+              );
+            }
+          }
+        });
       }
     }
 
