@@ -35,7 +35,7 @@ const App = {
     const isAuthenticating = ref(false);
     const hasFlashMessage = ref(false);
     const message = ref();
-
+    const isFetching = ref(false);
     const roundsUrl = computed(() => {
       if (branch.value && url.value) {
         const url = `next-printable-round?branch_id=${branch?.value?.id}`;
@@ -194,48 +194,57 @@ const App = {
             _url += `&content=${meta.content}`;
           }
         }
-        axios.get(_url).then((response) => {
-          const { status, round, order, items } = response.data;
-          if (status) {
-            let printer;
-            if (round.destination === "KITCHEN") {
-              printer = kitchenOrdersPrinter.value;
-            } else if (round.destination === "BAR") {
-              printer = bardOrdersPrinter.value;
+        isFetching.value = true;
+        axios
+          .get(_url)
+          .then((response) => {
+            const { status, round, order, items } = response.data;
+            isFetching.value = false;
+            if (status) {
+              let printer;
+              if (round.destination === "KITCHEN") {
+                printer = kitchenOrdersPrinter.value;
+              } else if (round.destination === "BAR") {
+                printer = bardOrdersPrinter.value;
+              } else {
+                printer = invoicesPrinter.value;
+              }
+              if (printer) {
+                const _content = JSON.parse(printer.content);
+                const data = {
+                  printer: printer.name,
+                  type: printer.type,
+                  interface: printer.interface,
+                  port: printer.port,
+                  ip: printer.ip,
+                  round: round,
+                  items: items,
+                  order: order,
+                  settings: { ...appSettings.value },
+                  content: _content.join(""),
+                };
+                window.ipcRenderer
+                  .invoke("print-content", data)
+                  .then(() => {
+                    console.log("Print request sent...");
+                  })
+                  .catch((error) => {
+                    console.error("Catched Error:", error);
+                  });
+              }
             } else {
-              printer = invoicesPrinter.value;
-            }
-            if (printer) {
-              const _content = JSON.parse(printer.content);
-              const data = {
-                printer: printer.name,
-                type: printer.type,
-                interface: printer.interface,
-                port: printer.port,
-                ip: printer.ip,
-                round: round,
-                items: items,
-                order: order,
-                settings: { ...appSettings.value },
-                content: _content.join(""),
-              };
-              window.ipcRenderer
-                .invoke("print-content", data)
-                .then(() => {
-                  console.log("Print request sent...");
-                })
-                .catch((error) => {
-                  console.error("Catched Error:", error);
-                });
-            }
-          } else {
-            if (round) {
+              fetchInvoices(meta);
+              /* if (round) {
               axios.get(
                 `${url.value}/api/pos/update-printed-round/${round.id}`
               );
+            } */
             }
-          }
-        });
+          })
+          .catch(() => {
+            isFetching.value = false;
+            fetchInvoices(meta);
+          });
       }
     }
 

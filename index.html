@@ -414,7 +414,7 @@
                 v-for="printer in activePrinters"
                 :key="printer.id"
               >
-                <div class="printer-container" v-if="printInterval">
+                <div class="printer-container" v-if="isFetching">
                   <svg
                     class="printer-icon"
                     xmlns="http://www.w3.org/2000/svg"
