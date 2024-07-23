@@ -1,5 +1,6 @@
 const electron = require("electron");
 const path = require("path");
+const fs = require("fs");
 const { app, BrowserWindow, ipcMain } = electron;
 const {
   ThermalPrinter,
@@ -10,14 +11,16 @@ const {
 const { PrismaClient } = require("@prisma/client");
 const userDataPath = app.getPath("userData");
 const dbFilePath = path.join(userDataPath, "printing.sqlite");
+let requireInitialization = false;
 if (!fs.existsSync(dbFilePath)) {
   fs.writeFileSync(dbFilePath, "", "utf8");
+  requireInitialization = true;
 }
 
 const prisma = new PrismaClient({
   datasources: {
     db: {
-      url: dbFilePath,
+      url: `file:${dbFilePath}`,
     },
   },
 });
@@ -137,15 +140,51 @@ function createWindow() {
   });
 
   mainWindow.webContents.on("did-finish-load", async () => {
-    const user = await prisma.user.findFirst();
-    if (!user) {
-      await prisma.printer.create({
-        data: {
-          name: "Super Admin",
-          email: "webmaster@gmail.com",
-          password: "tame123",
-        },
-      });
+    if (requireInitialization) {
+      try {
+        await prisma.$connect();
+        const createPrinterTable = `
+          CREATE TABLE IF NOT EXISTS printers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            type TEXT NOT NULL,
+            ip TEXT,
+            port TEXT,
+            interface TEXT NOT NULL,
+            content TEXT
+          );
+        `;
+        const createUserTable = `
+          CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL
+          );
+        `;
+        const createSettingTable = `
+          CREATE TABLE IF NOT EXISTS settings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            branch_id INTEGER NOT NULL,
+            branch_name TEXT NOT NULL,
+            base_url TEXT NOT NULL
+          );
+        `;
+        await prisma.$executeRawUnsafe(createPrinterTable);
+        await prisma.$executeRawUnsafe(createUserTable);
+        await prisma.$executeRawUnsafe(createSettingTable);
+        await prisma.user.create({
+          data: {
+            name: "Super Admin",
+            email: "webmaster@gmail.com",
+            password: "tame123",
+          },
+        });
+      } catch (error) {
+        await prisma.$disconnect();
+      } finally {
+        await prisma.$disconnect();
+      }
     }
     mainWindow.webContents.getPrintersAsync().then((printers) => {
       mainWindow.webContents.send("printersList", printers);
