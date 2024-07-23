@@ -107,7 +107,7 @@ const App = {
       });
 
       window.ipcRenderer.on("printedContent", (event, meta) => {
-        setTimeout(() => fetchInvoices(meta), 2000);
+        setTimeout(() => fetchInvoices(meta), 3000);
       });
 
       window.ipcRenderer.on("retryPrinting", (event, data) => {
@@ -236,7 +236,11 @@ const App = {
               if (round) {
                 axios
                   .get(`${url.value}/api/pos/update-printed-round/${round.id}`)
-                  .then(() => fetchInvoices(meta));
+                  .then(() => {
+                    setTimeout(() => {
+                      fetchInvoices(meta);
+                    }, 2000);
+                  });
               }
             }
           })
@@ -244,7 +248,7 @@ const App = {
             isFetching.value = false;
             setTimeout(() => {
               fetchInvoices(meta);
-            }, 2000);
+            }, 3000);
           });
       }
     }
@@ -367,6 +371,7 @@ const App = {
     }
 
     return {
+      isFetching,
       isAuthenticating,
       authenticated,
       appSettings,
