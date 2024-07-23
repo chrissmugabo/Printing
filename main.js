@@ -8,15 +8,20 @@ const {
   BreakLine,
 } = require("node-thermal-printer");
 const { PrismaClient } = require("@prisma/client");
-const { log } = require("console");
-const __dbPath = `file:${path.join(__dirname, 'settings.db')}`;
+const userDataPath = app.getPath("userData");
+const dbFilePath = path.join(userDataPath, "printing.sqlite");
+if (!fs.existsSync(dbFilePath)) {
+  fs.writeFileSync(dbFilePath, "", "utf8");
+}
+
 const prisma = new PrismaClient({
-  datasources:{
-    db:{
-      url: __dbPath
-    }
-  }
+  datasources: {
+    db: {
+      url: dbFilePath,
+    },
+  },
 });
+
 let mainWindow;
 app.setName("Printing Service");
 
@@ -132,6 +137,16 @@ function createWindow() {
   });
 
   mainWindow.webContents.on("did-finish-load", async () => {
+    const user = await prisma.user.findFirst();
+    if (!user) {
+      await prisma.printer.create({
+        data: {
+          name: "Super Admin",
+          email: "webmaster@gmail.com",
+          password: "tame123",
+        },
+      });
+    }
     mainWindow.webContents.getPrintersAsync().then((printers) => {
       mainWindow.webContents.send("printersList", printers);
     });
@@ -167,9 +182,8 @@ ipcMain.on("authenticated", async (event) => {
 ipcMain.handle("print-content", async (event, data) => {
   const options = {
     type: PrinterTypes[data.type], // or PrinterTypes.STAR
-    characterSet: CharacterSet.PC852_LATIN2, // Printer character set
-    removeSpecialCharacters: false, // Removes special characters - default: false
-    //lineCharacter: "=", // Set character for lines - default: "-"
+    characterSet: CharacterSet.PC852_LATIN2,
+    removeSpecialCharacters: false,
     breakLine: BreakLine.WORD,
     options: {
       timeout: 5000,
@@ -255,7 +269,9 @@ ipcMain.handle("print-content", async (event, data) => {
     printer.drawLine();
     if (data?.round?.category !== "ORDER") {
       printer.alignCenter();
-      printer.println(`Dial \x1B\x45\x01${data?.settings?.momo_code}\x1B\x45\x00 to pay with MOMO`);
+      printer.println(
+        `Dial \x1B\x45\x01${data?.settings?.momo_code}\x1B\x45\x00 to pay with MOMO`
+      );
       printer.println(
         `This is not a legal receipt. Please ask your legal receipt.`
       );

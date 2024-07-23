@@ -18,7 +18,7 @@
     "release": "node ./script/release.js",
     "prepack": "check-for-leaks",
     "prepush": "check-for-leaks",
-    "package-win": "electron-packager . printing-service --overwrite --platform=win32 --arch=x64 --icon=assets/app-icon/win/icon.ico --prune=true --out=release-builds --version-string.CompanyName='Tame Apps' --version-string.FileDescription='Tame Apps' --version-string.ProductName=\"Tame Apps Printing Service\"",
+    "package-win": "electron-packager . printing-service --overwrite --asar --platform=win32 --arch=x64 --icon=assets/app-icon/win/icon.ico --prune=true --out=release-builds --version-string.CompanyName='Tame Apps' --version-string.FileDescription='Tame Apps' --version-string.ProductName=\"Tame Apps Printing Service\"",
     "create-installer-win": "node installers/windows/createinstaller.js"
   },
   "license": "MIT",
