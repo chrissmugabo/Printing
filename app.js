@@ -199,7 +199,6 @@ const App = {
           .get(_url)
           .then((response) => {
             const { status, round, order, items } = response.data;
-            isFetching.value = false;
             if (status) {
               let printer;
               if (round.destination === "KITCHEN") {
@@ -234,14 +233,13 @@ const App = {
               }
             } else {
               if (round) {
-                axios
-                  .get(`${url.value}/api/pos/update-printed-round/${round.id}`)
-                  .then(() => {
-                    setTimeout(() => {
-                      fetchInvoices(meta);
-                    }, 2000);
-                  });
+                axios.get(
+                  `${url.value}/api/pos/update-printed-round/${round.id}`
+                );
               }
+              setTimeout(() => {
+                fetchInvoices(meta);
+              }, 2000);
             }
           })
           .catch(() => {
