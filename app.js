@@ -27,7 +27,6 @@ const App = {
     const content = ref([]);
     const url = ref("");
     const branch = ref({});
-    const printInterval = ref(null);
     const choosenBranchId = ref();
     const authenticated = ref(false);
     const isLoading = ref(false);
@@ -118,7 +117,6 @@ const App = {
       });
 
       window.ipcRenderer.on("recordSaved", (event, data) => {
-        clearInterval(printInterval.value);
         const { type, result } = data;
         switch (type) {
           case "printer":
@@ -368,7 +366,6 @@ const App = {
       content,
       url,
       branch,
-      printInterval,
       choosenBranchId,
       roundsUrl,
       printerIpAddress,
