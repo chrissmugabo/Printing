@@ -234,6 +234,7 @@ ipcMain.handle("print-content", async (event, data) => {
     options.interface = `//localhost/${data.port}`;
   }
   const printer = new ThermalPrinter(options);
+  const increaseMomoSize = (text) => {};
   const orderDate = `${data?.order?.system_date} ${data?.order?.order_time}`;
   try {
     await printer.isPrinterConnected();
@@ -284,11 +285,13 @@ ipcMain.handle("print-content", async (event, data) => {
     printer.drawLine();
 
     printer.tableCustom([
-      { text: "Item", align: "LEFT", width: 0.5 },
-      { text: "Qty", align: "CENTER", width: 0.1 },
-      { text: "Price", align: "CENTER", width: 0.18 },
-      { text: "Total", align: "RIGHT", width: 0.22 },
+      { text: "Item", align: "LEFT", width: 0.5, bold: true },
+      { text: "Qty", align: "CENTER", width: 0.1, bold: true },
+      { text: "Price", align: "CENTER", width: 0.18, bold: true },
+      { text: "Total", align: "RIGHT", width: 0.22, bold: true },
     ]);
+
+    printer.drawLine();
 
     data?.items.forEach((item) => {
       printer.tableCustom([
@@ -297,27 +300,45 @@ ipcMain.handle("print-content", async (event, data) => {
         { text: helper.formatMoney(item.price), align: "CENTER", width: 0.18 },
         { text: helper.formatMoney(item.amount), align: "RIGHT", width: 0.22 },
       ]);
+      if (item?.comment && data?.round?.category === "ORDER") {
+        printer.setTypeFontB();
+        printer.tableCustom([
+          {
+            text: `\x1B\x45\x01Notes: \x1B\x45\x00${item.comment}`,
+            align: "LEFT",
+            width: 1,
+          },
+        ]);
+        printer.setTypeFontA();
+      }
     });
 
     printer.drawLine();
-
-    printer.alignRight();
-    printer.setTextDoubleWidth();
-    printer.println(`Total: ${helper.formatMoney(data?.order?.grand_total)}`);
-    printer.setTextNormal();
-    printer.drawLine();
     if (data?.round?.category !== "ORDER") {
+      printer.alignRight();
+      printer.setTextDoubleWidth();
+      printer.println(`Total: ${helper.formatMoney(data?.order?.grand_total)}`);
+      printer.setTextNormal();
+      printer.drawLine();
       printer.alignCenter();
-      printer.println(
-        `Dial \x1B\x45\x01${data?.settings?.momo_code}\x1B\x45\x00 to pay with MOMO`
-      );
+      printer.print(`Dial `);
+      printer.bold(true);
+      //printer.print(`\x1B\x45\x01${data?.settings?.momo_code}\x1B\x45\x00`);
+      printer.setTextQuadArea(); 
+      printer.setTypeFontB();
+      printer.print(`${data?.settings?.momo_code}`);
+      printer.bold(false);
+      printer.setTextNormal();
+      printer.setTypeFontA();
+      printer.print(` to pay with MOMO`);
+      printer.newLine();
       printer.println(
         `This is not a legal receipt. Please ask your legal receipt.`
       );
       printer.println(`Thank you!`);
     }
     printer.cut();
-
+    printer.beep();
     await printer.execute();
     mainWindow?.webContents.send("printedContent", {
       latest: data?.round?.id,
@@ -325,7 +346,7 @@ ipcMain.handle("print-content", async (event, data) => {
     });
   } catch (error) {
     mainWindow?.webContents.send("retryPrinting", data);
-    console.error("Print failed:", error);
+    //console.error("Print failed:", error);
   }
 });
 

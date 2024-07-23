@@ -112,7 +112,7 @@ const App = {
 
       window.ipcRenderer.on("retryPrinting", (event, data) => {
         window.ipcRenderer.invoke("print-content", data).then(() => {
-          console.log("Print retry sent...");
+          //console.log("Print retry sent...");
         });
       });
 
@@ -225,10 +225,10 @@ const App = {
                 window.ipcRenderer
                   .invoke("print-content", data)
                   .then(() => {
-                    console.log("Print request sent...");
+                    //  console.log("Print request sent...");
                   })
                   .catch((error) => {
-                    console.error("Catched Error:", error);
+                    // console.error("Catched Error:", error);
                   });
               }
             } else {
