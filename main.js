@@ -8,6 +8,7 @@ const {
   BreakLine,
 } = require("node-thermal-printer");
 const { PrismaClient } = require("@prisma/client");
+const { log } = require("console");
 const __dbPath = `file:${path.join(__dirname, 'settings.db')}`;
 const prisma = new PrismaClient({
   datasources:{
@@ -177,7 +178,7 @@ ipcMain.handle("print-content", async (event, data) => {
   if (data.ip) {
     options.interface = `tcp://${data.ip}`;
   } else {
-    options.interface = `\\\\.\\${data.port}`;
+    options.interface = `//localhost/${data.port}`;
   }
   const printer = new ThermalPrinter(options);
   const orderDate = `${data?.order?.system_date} ${data?.order?.order_time}`;
