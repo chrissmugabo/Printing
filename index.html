@@ -218,6 +218,9 @@
                 class="form-control"
                 readonly
               />
+              <a href="javascript:void(0)" @click.prevent="changeBranch"
+                >Edit Branch</a
+              >
             </div>
           </div>
           <div class="col-3">
@@ -520,7 +523,7 @@
           >
             <div class="modal-content">
               <div class="modal-body">
-                <div class="form-group">
+                <form class="form-group" @submit.prevent="handleLogin">
                   <label for="password" class="mb-2 h5"
                     >Enter Your Password</label
                   >
@@ -539,7 +542,7 @@
                   >
                     Authenticate
                   </button>
-                </div>
+                </form>
               </div>
             </div>
           </div>

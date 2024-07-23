@@ -163,14 +163,12 @@ const App = {
             id: settings.branch_id,
             name: settings.branch_name,
           };
-          axios
-            .get(settings.base_url + "/api/preloaders")
-            .then((response) => {
-              appSettings.value = response?.data;
-              if (activePrinters.value.length) {
-                fetchInvoices();
-              }
-            });
+          axios.get(settings.base_url + "/api/preloaders").then((response) => {
+            appSettings.value = response?.data;
+            if (activePrinters.value.length) {
+              fetchInvoices();
+            }
+          });
         }
       });
     });
@@ -337,6 +335,12 @@ const App = {
       setTimeout(() => (hasFlashMessage.value = !hasFlashMessage.value), 3000);
     }
 
+    function changeBranch() {
+      choosenBranchId.value = undefined;
+      branches.value = [];
+      branch.value = {};
+    }
+
     return {
       isAuthenticating,
       authenticated,
@@ -376,6 +380,7 @@ const App = {
       handleCancel,
       handleLogin,
       isLoading,
+      changeBranch,
     };
   },
 };

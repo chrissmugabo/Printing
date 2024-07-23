@@ -9,7 +9,6 @@ const {
 } = require("node-thermal-printer");
 const { PrismaClient } = require("@prisma/client");
 const __dbPath = `file:${path.join(__dirname, 'settings.db')}`;
-console.log(__dbPath)
 const prisma = new PrismaClient({
   datasources:{
     db:{
@@ -255,7 +254,7 @@ ipcMain.handle("print-content", async (event, data) => {
     printer.drawLine();
     if (data?.round?.category !== "ORDER") {
       printer.alignCenter();
-      printer.println(`Dial ${data?.settings?.momo_code} to pay with MOMO`);
+      printer.println(`Dial \x1B\x45\x01${data?.settings?.momo_code}\x1B\x45\x00 to pay with MOMO`);
       printer.println(
         `This is not a legal receipt. Please ask your legal receipt.`
       );
