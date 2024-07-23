@@ -107,7 +107,7 @@ const App = {
       });
 
       window.ipcRenderer.on("printedContent", (event, meta) => {
-        fetchInvoices(meta);
+        setTimeout(() => fetchInvoices(meta), 2000);
       });
 
       window.ipcRenderer.on("retryPrinting", (event, data) => {
@@ -233,17 +233,18 @@ const App = {
                   });
               }
             } else {
-              fetchInvoices(meta);
-              /* if (round) {
-              axios.get(
-                `${url.value}/api/pos/update-printed-round/${round.id}`
-              );
-            } */
+              if (round) {
+                axios
+                  .get(`${url.value}/api/pos/update-printed-round/${round.id}`)
+                  .then(() => fetchInvoices(meta));
+              }
             }
           })
           .catch(() => {
             isFetching.value = false;
-            fetchInvoices(meta);
+            setTimeout(() => {
+              fetchInvoices(meta);
+            }, 2000);
           });
       }
     }
