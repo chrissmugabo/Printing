@@ -257,9 +257,13 @@ ipcMain.handle("print-content", async (event, data) => {
           data?.round?.destination
         })`
       );
-    } else {
+    } else if (data?.round?.category === "INVOICE") {
       printer.println(
         `Invoice #: ${helper.generateVoucherNo(data?.order?.id)}`
+      );
+    } else {
+      printer.println(
+        `Round Slip #: ${helper.generateVoucherNo(data?.round?.round_no)}`
       );
     }
     printer.println(`Customer: ${data?.order?.client || "Walk-In"}`);
@@ -314,7 +318,7 @@ ipcMain.handle("print-content", async (event, data) => {
     });
 
     printer.drawLine();
-    if (data?.round?.category !== "ORDER") {
+    if (data?.round?.category === "INVOICE") {
       printer.alignRight();
       printer.setTextDoubleWidth();
       printer.println(`Total: ${helper.formatMoney(data?.order?.grand_total)}`);
@@ -324,7 +328,7 @@ ipcMain.handle("print-content", async (event, data) => {
       printer.print(`Dial `);
       printer.bold(true);
       //printer.print(`\x1B\x45\x01${data?.settings?.momo_code}\x1B\x45\x00`);
-      printer.setTextQuadArea(); 
+      printer.setTextQuadArea();
       printer.setTypeFontB();
       printer.print(`${data?.settings?.momo_code}`);
       printer.bold(false);
@@ -336,6 +340,13 @@ ipcMain.handle("print-content", async (event, data) => {
         `This is not a legal receipt. Please ask your legal receipt.`
       );
       printer.println(`Thank you!`);
+    } else if (data?.round?.category === "ROUND_SLIP") {
+      const total = data?.items?.reduce((a, b) => a + Number(b.amount), 0);
+      printer.alignRight();
+      printer.setTextDoubleWidth();
+      printer.println(`Total: ${helper.formatMoney(total)}`);
+      printer.setTextNormal();
+      printer.drawLine();
     }
     printer.cut();
     printer.beep();
