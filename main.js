@@ -262,8 +262,9 @@ ipcMain.handle("print-content", async (event, data) => {
         `Invoice #: ${helper.generateVoucherNo(data?.order?.id)}`
       );
     } else {
+      // printer.print(`\x1B\x45\x01${data?.settings?.momo_code}\x1B\x45\x00`);
       printer.println(
-        `Round Slip #: ${helper.generateVoucherNo(data?.round?.round_no)}`
+        `\x1B\x45\x01Round Slip #\x1B\x45\x00: ${helper.generateVoucherNo(data?.round?.round_no)}`
       );
     }
     printer.println(`Customer: ${data?.order?.client || "Walk-In"}`);
@@ -347,6 +348,8 @@ ipcMain.handle("print-content", async (event, data) => {
       printer.println(`Total: ${helper.formatMoney(total)}`);
       printer.setTextNormal();
       printer.drawLine();
+      printer.alignCenter();
+      printer.println("This is neither a legal receipt or final invoice. It is just a round total slip.")
     }
     printer.cut();
     printer.beep();
