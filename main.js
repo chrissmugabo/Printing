@@ -253,7 +253,7 @@ ipcMain.handle("print-content", async (event, data) => {
     printer.alignLeft();
     if (data?.round?.category === "ORDER") {
       printer.println(
-        `Order #: ${helper.generateVoucherNo(data?.round?.round_no)}(${
+        `Order #: ${helper.generateVoucherNo(data?.order?.round_no)}(${
           data?.round?.destination
         })`
       );
