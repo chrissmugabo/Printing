@@ -55,9 +55,7 @@ select:disabled {
   opacity: 1;
 }
 [type="button"],
-button {
-  -webkit-appearance: button;
-}
+
 [type="button"]:not(:disabled),
 button:not(:disabled) {
   cursor: pointer;

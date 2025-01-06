@@ -186,7 +186,6 @@ const App = {
 
             if (activePrinters.value.length) {
               printers.forEach((_printer) => {
-                console.log(_printer);
                 if (_printer.content) {
                   
                   fetchInvoices({
@@ -252,7 +251,7 @@ const App = {
                       items: items,
                       order: order,
                       settings: { ...appSettings.value },
-                      content: _content.join(""),
+                      content: meta ? meta.content : null,
                     };
                     window.ipcRenderer
                       .invoke("print-content", data)

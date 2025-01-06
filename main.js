@@ -229,18 +229,20 @@ ipcMain.handle("print-content", async (event, data) => {
     printer.alignLeft();
     if (data?.round?.category === "ORDER") {
       printer.println(
-        `Order #: ${helper.generateVoucherNo(data?.order?.round_no)}(${
+        `Order #: ${helper.generateVoucherNo(data?.round?.round_no)}(${
           data?.round?.destination
-        })`,
+        })`
       );
     } else if (data?.round?.category === "INVOICE") {
       printer.println(
-        `Invoice #: ${helper.generateVoucherNo(data?.order?.id)}`,
+        `Invoice #: ${helper.generateVoucherNo(data?.order?.id)}`
       );
     } else {
       // printer.print(`\x1B\x45\x01${data?.settings?.momo_code}\x1B\x45\x00`);
       printer.println(
-        `\x1B\x45\x01Round Slip #\x1B\x45\x00: ${helper.generateVoucherNo(data?.round?.round_no)}`,
+        `\x1B\x45\x01Round Slip #\x1B\x45\x00: ${helper.generateVoucherNo(
+          data?.round?.round_no
+        )}`
       );
     }
     printer.println(`Customer: ${data?.order?.client || "Walk-In"}`);
@@ -314,7 +316,7 @@ ipcMain.handle("print-content", async (event, data) => {
       printer.print(` to pay with MOMO`);
       printer.newLine();
       printer.println(
-        `This is not a legal receipt. Please ask your legal receipt.`,
+        `This is not a legal receipt. Please ask your legal receipt.`
       );
       printer.println(`Thank you!`);
     } else if (data?.round?.category === "ROUND_SLIP") {
@@ -326,7 +328,7 @@ ipcMain.handle("print-content", async (event, data) => {
       printer.drawLine();
       printer.alignCenter();
       printer.println(
-        "This is neither a legal receipt or final invoice. It is just a round total slip.",
+        "This is neither a legal receipt or final invoice. It is just a round total slip."
       );
     }
     printer.cut();
@@ -334,7 +336,7 @@ ipcMain.handle("print-content", async (event, data) => {
     await printer.execute();
     mainWindow?.webContents.send("printedContent", {
       latest: data?.round?.id,
-      content: data?.content,
+      ...(data?.content ? { content: data.content } : {}),
     });
   } catch (error) {
     mainWindow?.webContents.send("retryPrinting", data);
