@@ -164,6 +164,11 @@ if (!gotTheLock) {
 
 app.whenReady().then(() => {
   createWindow();
+  app.setLoginItemSettings({
+    openAtLogin: true,
+    path: app.getPath("exe"),
+    args: [],
+  });
 });
 
 app.on("window-all-closed", function () {
