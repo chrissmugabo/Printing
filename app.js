@@ -38,6 +38,7 @@ const App = {
     const hasFlashMessage = ref(false);
     const message = ref();
     const isFetching = ref(false);
+    const configOpen = ref(false);
     const roundsUrl = computed(() => {
       if (branch.value && url.value) {
         const url = `next-printable-round?branch_id=${branch?.value?.id}`;
@@ -95,11 +96,13 @@ const App = {
             type: "success",
             text: "Authenticated successfully",
           });
+          configOpen.value = true;
         } else {
           toggleFlashMessage({
             type: "danger",
             text: "Invalid Password. Try again",
           });
+          configOpen.value = false;
           invalidPasword.value = true;
         }
       });
@@ -399,6 +402,7 @@ const App = {
       toggleFlashMessage,
       message,
       password,
+      configOpen,
       resetForm,
       setPrinter,
       activePrinters,
