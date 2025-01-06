@@ -28,7 +28,9 @@ const App = {
     const url = ref("");
     const branch = ref({});
     const choosenBranchId = ref();
-    const authenticated = ref(false);
+    // Setting up authenticated to true to ensure that login form is hidden
+    // Login for is depricated in v.2
+    const authenticated = ref(true);
     const isLoading = ref(false);
     const password = ref("");
     const invalidPasword = ref(false);
@@ -46,19 +48,19 @@ const App = {
 
     const invoicesPrinter = computed(() => {
       return activePrinters.value.find(
-        (printer) => JSON.parse(printer.content).indexOf("I") !== -1
+        (printer) => JSON.parse(printer.content).indexOf("I") !== -1,
       );
     });
 
     const kitchenOrdersPrinter = computed(() => {
       return activePrinters.value.find(
-        (printer) => JSON.parse(printer.content).indexOf("K") !== -1
+        (printer) => JSON.parse(printer.content).indexOf("K") !== -1,
       );
     });
 
     const bardOrdersPrinter = computed(() => {
       return activePrinters.value.find(
-        (printer) => JSON.parse(printer.content).indexOf("B") !== -1
+        (printer) => JSON.parse(printer.content).indexOf("B") !== -1,
       );
     });
 
@@ -71,7 +73,7 @@ const App = {
         (error) => {
           isLoading.value = false;
           return Promise.reject(error);
-        }
+        },
       );
 
       axios.interceptors.response.use(
@@ -82,7 +84,7 @@ const App = {
         (error) => {
           isLoading.value = false;
           return Promise.reject(error);
-        }
+        },
       );
 
       window.ipcRenderer.on("authResponse", (event, response) => {
@@ -122,7 +124,7 @@ const App = {
           case "printer":
             if (selectedPrinterId.value) {
               const index = activePrinters.value.findIndex(
-                (printer) => printer.id == selectedPrinterId.value
+                (printer) => printer.id == selectedPrinterId.value,
               );
               if (index !== -1) {
                 activePrinters.value[index] = result;
@@ -141,7 +143,7 @@ const App = {
             break;
           case "printer-deleted":
             const index = activePrinters.value.findIndex(
-              (printer) => printer.id == result
+              (printer) => printer.id == result,
             );
             if (index !== -1) {
               activePrinters.value.splice(index, 1);
@@ -234,7 +236,7 @@ const App = {
             } else {
               if (round) {
                 axios.get(
-                  `${url.value}/api/pos/update-printed-round/${round.id}`
+                  `${url.value}/api/pos/update-printed-round/${round.id}`,
                 );
               }
               setTimeout(() => {
@@ -277,7 +279,7 @@ const App = {
 
     function updateSettings() {
       const row = branches.value.find(
-        (_branch) => _branch.id == choosenBranchId.value
+        (_branch) => _branch.id == choosenBranchId.value,
       );
       if (row) {
         const settings = {

@@ -1,7 +1,8 @@
 const electron = require("electron");
 const path = require("path");
 const fs = require("fs");
-const { app, BrowserWindow, ipcMain } = electron;
+const helper = require("./helper");
+const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } = electron;
 const {
   ThermalPrinter,
   PrinterTypes,
@@ -26,103 +27,14 @@ const prisma = new PrismaClient({
 });
 
 let mainWindow;
+let tray;
 app.setName("Printing Service");
-
-// Helper functions
-const helper = {
-  timeZone: "Africa/Kigali",
-  formatNumber: (number) => {
-    if (!number) {
-      return 0;
-    }
-    let str = number.toString();
-    const decimalIndex = str.indexOf(".");
-    const decimalPlaces = 3;
-    if (decimalIndex !== -1) {
-      const limitedDecimal = str.substr(decimalIndex + 1, decimalPlaces);
-      str = str.substr(0, decimalIndex + 1) + limitedDecimal;
-    }
-    return str.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  },
-
-  empty(mixedVar) {
-    let undef, key, i, len;
-    const emptyValues = [undef, null, false, 0, "", "0"];
-    for (i = 0, len = emptyValues.length; i < len; i++) {
-      if (mixedVar === emptyValues[i]) {
-        return true;
-      }
-    }
-    if (typeof mixedVar === "object") {
-      for (key in mixedVar) {
-        if (Object.prototype.hasOwnProperty.call(mixedVar, key)) {
-          return false;
-        }
-      }
-      return true;
-    }
-    return false;
-  },
-  formatDate(str) {
-    let options = {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      timeZone: this.timeZone,
-    };
-    let today = new Date(str);
-    return today.toLocaleDateString("en-US", options);
-  },
-  formatTime(str) {
-    return new Date(str).toLocaleTimeString("en-US", {
-      timeZone: this.timeZone,
-    });
-  },
-  formatOrderTime(str) {
-    return new Date(str)
-      .toTimeString("en-US", { timeZone: this.timeZone })
-      .slice(0, 5);
-  },
-  generateVoucherNo(no) {
-    if (no) {
-      let len = no.toString().length;
-      if (len >= 4) return no;
-      if (len == 1) return `000${no}`;
-      if (len == 2) return `00${no}`;
-      if (len == 3) return `0${no}`;
-    }
-  },
-
-  padNumber(number, targetedLength = 5) {
-    let strNumber = number.toString();
-    if (strNumber.length < targetedLength) {
-      let padding = new Array(targetedLength - strNumber.length + 1).join("0");
-      return padding + strNumber;
-    }
-    return number;
-  },
-
-  formatMoney(num) {
-    return `${this.formatNumber(num)}`;
-  },
-
-  generateFormData(obj) {
-    const formData = new FormData();
-    for (let key in obj) {
-      if (obj[key] !== null && typeof obj[key] !== "undefined") {
-        if (typeof obj[key] === "object")
-          formData.append(key, JSON.stringify(obj[key]));
-        else formData.append(key, obj[key]);
-      }
-    }
-    return formData;
-  },
-};
 
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 650,
     height: 500,
+    show: false,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       enableRemoteModule: false,
@@ -130,13 +42,48 @@ function createWindow() {
       contextIsolation: true,
     },
     icon: path.join(__dirname, "/assets/icons/logo.png"),
+    acceptFirstMouse: true,
   });
 
   mainWindow.setTitle("Printing Service");
   mainWindow.loadURL("file://" + __dirname + "/index.html");
 
-  mainWindow.on("closed", () => {
-    mainWindow = null;
+  mainWindow.on("close", (event) => {
+    // mainWindow = null;
+    if (!app.isQuiting) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
+  });
+
+  const iconPath = path.join(__dirname, "assets", "icons", "logo.png");
+  tray = new Tray(nativeImage.createFromPath(iconPath));
+  const trayMenu = Menu.buildFromTemplate([
+    {
+      label: "Show App",
+      click: () => {
+        mainWindow.show();
+      },
+    },
+    {
+      label: "Exit",
+      click: () => {
+        app.isQuiting = true;
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.setToolTip("Printing Service");
+  tray.setContextMenu(trayMenu);
+
+  // Handle tray icon click to show the app
+  tray.on("click", () => {
+    mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
+  });
+
+  mainWindow.once("ready-to-show", () => {
+    mainWindow.show();
   });
 
   mainWindow.webContents.on("did-finish-load", async () => {
@@ -192,13 +139,37 @@ function createWindow() {
   });
 }
 
-app.on("ready", () => {
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit(); // Quit if another instance is already running
+} else {
+  app.on("second-instance", (event, commandLine, workingDirectory) => {
+    // Handle second instance by focusing or restoring the main window
+    if (mainWindow) {
+      if (mainWindow.isVisible()) {
+        mainWindow.focus();
+      } else {
+        mainWindow.show();
+      }
+    } else {
+      createWindow();
+    }
+    app.quit();
+  });
+}
+
+/* app.on("ready", () => {
+  createWindow();
+}); */
+
+app.whenReady().then(() => {
   createWindow();
 });
 
 app.on("window-all-closed", function () {
   if (process.platform !== "darwin") {
-    app.quit();
+    //app.quit();
+    app.dock.hide();
   }
 });
 
@@ -255,16 +226,16 @@ ipcMain.handle("print-content", async (event, data) => {
       printer.println(
         `Order #: ${helper.generateVoucherNo(data?.order?.round_no)}(${
           data?.round?.destination
-        })`
+        })`,
       );
     } else if (data?.round?.category === "INVOICE") {
       printer.println(
-        `Invoice #: ${helper.generateVoucherNo(data?.order?.id)}`
+        `Invoice #: ${helper.generateVoucherNo(data?.order?.id)}`,
       );
     } else {
       // printer.print(`\x1B\x45\x01${data?.settings?.momo_code}\x1B\x45\x00`);
       printer.println(
-        `\x1B\x45\x01Round Slip #\x1B\x45\x00: ${helper.generateVoucherNo(data?.round?.round_no)}`
+        `\x1B\x45\x01Round Slip #\x1B\x45\x00: ${helper.generateVoucherNo(data?.round?.round_no)}`,
       );
     }
     printer.println(`Customer: ${data?.order?.client || "Walk-In"}`);
@@ -338,7 +309,7 @@ ipcMain.handle("print-content", async (event, data) => {
       printer.print(` to pay with MOMO`);
       printer.newLine();
       printer.println(
-        `This is not a legal receipt. Please ask your legal receipt.`
+        `This is not a legal receipt. Please ask your legal receipt.`,
       );
       printer.println(`Thank you!`);
     } else if (data?.round?.category === "ROUND_SLIP") {
@@ -349,7 +320,9 @@ ipcMain.handle("print-content", async (event, data) => {
       printer.setTextNormal();
       printer.drawLine();
       printer.alignCenter();
-      printer.println("This is neither a legal receipt or final invoice. It is just a round total slip.")
+      printer.println(
+        "This is neither a legal receipt or final invoice. It is just a round total slip.",
+      );
     }
     printer.cut();
     printer.beep();
