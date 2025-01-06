@@ -188,7 +188,7 @@ app.on("before-quit", async () => {
   await prisma.$disconnect();
 });
 
-ipcMain.on("authenticated", async (event) => {
+ipcMain.on("request-settings", async (event) => {
   const settings = await prisma.setting.findFirst();
   const printers = await prisma.printer.findMany();
   event.reply("availableSettings", { settings, printers });

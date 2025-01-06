@@ -30,7 +30,7 @@ const App = {
     const choosenBranchId = ref();
     // Setting up authenticated to true to ensure that login form is hidden
     // Login for is depricated in v.2
-    const authenticated = ref(true);
+    const authenticated = ref(false);
     const isLoading = ref(false);
     const password = ref("");
     const invalidPasword = ref(false);
@@ -49,19 +49,19 @@ const App = {
 
     const invoicesPrinter = computed(() => {
       return activePrinters.value.find(
-        (printer) => JSON.parse(printer.content).indexOf("I") !== -1,
+        (printer) => JSON.parse(printer.content).indexOf("I") !== -1
       );
     });
 
     const kitchenOrdersPrinter = computed(() => {
       return activePrinters.value.find(
-        (printer) => JSON.parse(printer.content).indexOf("K") !== -1,
+        (printer) => JSON.parse(printer.content).indexOf("K") !== -1
       );
     });
 
     const bardOrdersPrinter = computed(() => {
       return activePrinters.value.find(
-        (printer) => JSON.parse(printer.content).indexOf("B") !== -1,
+        (printer) => JSON.parse(printer.content).indexOf("B") !== -1
       );
     });
 
@@ -74,7 +74,7 @@ const App = {
         (error) => {
           isLoading.value = false;
           return Promise.reject(error);
-        },
+        }
       );
 
       axios.interceptors.response.use(
@@ -85,13 +85,15 @@ const App = {
         (error) => {
           isLoading.value = false;
           return Promise.reject(error);
-        },
+        }
       );
+
+      // Request Settings
+      window.ipcRenderer.send("request-settings");
 
       window.ipcRenderer.on("authResponse", (event, response) => {
         authenticated.value = response;
         if (response) {
-          window.ipcRenderer.send("authenticated");
           toggleFlashMessage({
             type: "success",
             text: "Authenticated successfully",
@@ -127,7 +129,7 @@ const App = {
           case "printer":
             if (selectedPrinterId.value) {
               const index = activePrinters.value.findIndex(
-                (printer) => printer.id == selectedPrinterId.value,
+                (printer) => printer.id == selectedPrinterId.value
               );
               if (index !== -1) {
                 activePrinters.value[index] = result;
@@ -143,10 +145,17 @@ const App = {
               id: result.branch_id,
               name: result.branch_name,
             };
+            configOpen.value = false;
+            authenticated.value = false;
+            axios
+              .get(settings.base_url + "/api/preloaders")
+              .then((response) => {
+                appSettings.value = response?.data;
+              });
             break;
           case "printer-deleted":
             const index = activePrinters.value.findIndex(
-              (printer) => printer.id == result,
+              (printer) => printer.id == result
             );
             if (index !== -1) {
               activePrinters.value.splice(index, 1);
@@ -159,7 +168,7 @@ const App = {
           type: "success",
           text: "Database updated successfully",
         });
-        fetchInvoices();
+        window.ipcRenderer.send("request-settings");
       });
 
       window.ipcRenderer.on("availableSettings", (event, data) => {
@@ -174,8 +183,19 @@ const App = {
           };
           axios.get(settings.base_url + "/api/preloaders").then((response) => {
             appSettings.value = response?.data;
+
             if (activePrinters.value.length) {
-              fetchInvoices();
+              printers.forEach((_printer) => {
+                console.log(_printer);
+                if (_printer.content) {
+                  
+                  fetchInvoices({
+                    content: JSON.parse(_printer.content).join(""),
+                  });
+                } else {
+                  fetchInvoices();
+                }
+              });
             }
           });
         }
@@ -186,6 +206,10 @@ const App = {
       axios.get(url.value + "/api/pos/pos-branches").then((response) => {
         branches.value = response.data.branches;
       });
+    }
+
+    function openConfigMode() {
+      configOpen.value = true;
     }
 
     function fetchInvoices(meta = null) {
@@ -199,60 +223,72 @@ const App = {
             _url += `&content=${meta.content}`;
           }
         }
-        isFetching.value = true;
-        axios
-          .get(_url)
-          .then((response) => {
-            const { status, round, order, items } = response.data;
-            if (status) {
-              let printer;
-              if (round.destination === "KITCHEN") {
-                printer = kitchenOrdersPrinter.value;
-              } else if (round.destination === "BAR") {
-                printer = bardOrdersPrinter.value;
-              } else {
-                printer = invoicesPrinter.value;
-              }
-              if (printer) {
-                const _content = JSON.parse(printer.content);
-                const data = {
-                  printer: printer.name,
-                  type: printer.type,
-                  interface: printer.interface,
-                  port: printer.port,
-                  ip: printer.ip,
-                  round: round,
-                  items: items,
-                  order: order,
-                  settings: { ...appSettings.value },
-                  content: _content.join(""),
-                };
-                window.ipcRenderer
-                  .invoke("print-content", data)
-                  .then(() => {
-                    //  console.log("Print request sent...");
-                  })
-                  .catch((error) => {
-                    // console.error("Catched Error:", error);
-                  });
-              }
-            } else {
-              if (round) {
-                axios.get(
-                  `${url.value}/api/pos/update-printed-round/${round.id}`,
-                );
-              }
-              setTimeout(() => {
-                fetchInvoices(meta);
-              }, 2000);
-            }
-          })
-          .catch(() => {
-            isFetching.value = false;
-            setTimeout(() => {
-              fetchInvoices(meta);
-            }, 3000);
+
+        (async () => {
+          isFetching.value = true;
+          await navigator.locks.request("unique-request-lock", (lock) => {
+            axios
+              .get(_url)
+              .then((response) => {
+                const { status, round, order, items } = response.data;
+                if (status) {
+                  let printer;
+                  if (round.destination === "KITCHEN") {
+                    printer = kitchenOrdersPrinter.value;
+                  } else if (round.destination === "BAR") {
+                    printer = bardOrdersPrinter.value;
+                  } else {
+                    printer = invoicesPrinter.value;
+                  }
+                  if (printer) {
+                    const _content = JSON.parse(printer.content);
+                    const data = {
+                      printer: printer.name,
+                      type: printer.type,
+                      interface: printer.interface,
+                      port: printer.port,
+                      ip: printer.ip,
+                      round: round,
+                      items: items,
+                      order: order,
+                      settings: { ...appSettings.value },
+                      content: _content.join(""),
+                    };
+                    window.ipcRenderer
+                      .invoke("print-content", data)
+                      .then(() => {
+                        //  console.log("Print request sent...");
+                      })
+                      .catch((error) => {
+                        // console.error("Catched Error:", error);
+                      });
+                  }
+                } else {
+                  if (round) {
+                    async () => {
+                      await navigator.locks.request(
+                        "unique-updating-lock",
+                        (lock) => {
+                          axios.get(
+                            `${url.value}/api/pos/update-printed-round/${round.id}`
+                          );
+                        }
+                      );
+                    };
+                  }
+                  setTimeout(() => {
+                    fetchInvoices(meta);
+                  }, 2000);
+                }
+              })
+              .catch(() => {
+                isFetching.value = false;
+                setTimeout(() => {
+                  fetchInvoices(meta);
+                }, 3000);
+              });
           });
+        })();
       }
     }
 
@@ -282,12 +318,14 @@ const App = {
 
     function updateSettings() {
       const row = branches.value.find(
-        (_branch) => _branch.id == choosenBranchId.value,
+        (_branch) => _branch.id == choosenBranchId.value
       );
+      const _formatUrl = (_url) =>
+        String(_url).endsWith("/") ? _url.slice(0, _url.length - 1) : _url;
       if (row) {
         const settings = {
           branch_name: row.name,
-          base_url: url.value,
+          base_url: _formatUrl(url.value),
           branch_id: row.id,
         };
         window.ipcRenderer.invoke("save-settings", settings);
@@ -414,6 +452,7 @@ const App = {
       handleLogin,
       isLoading,
       changeBranch,
+      openConfigMode,
     };
   },
 };
