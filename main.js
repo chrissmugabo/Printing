@@ -393,3 +393,14 @@ ipcMain.handle("login-action", async (event, password) => {
   const response = user.password === password;
   mainWindow?.webContents.send("authResponse", response);
 });
+
+ipcMain.handle("reset-action", async (event, form) => {
+  const user = await prisma.user.findFirst();
+  const response = user.password === form.current_password;
+  if (response) {
+    await prisma.user.updateMany({ data: { password: form.new_password } });
+    mainWindow?.webContents.send("resetResponse", "password-changed");
+  } else {
+    mainWindow?.webContents.send("resetResponse", "password-mismatch");
+  }
+});

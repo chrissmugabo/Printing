@@ -1,4 +1,4 @@
-const { createApp, ref, computed, onBeforeMount } = Vue;
+const { createApp, ref, computed, onBeforeMount, reactive } = Vue;
 const generateFormData = (obj) => {
   const formData = new FormData();
   for (let key in obj) {
@@ -27,6 +27,7 @@ const App = {
     const content = ref([]);
     const url = ref("");
     const branch = ref({});
+    const modalView = ref("LOGIN");
     const choosenBranchId = ref();
     // Setting up authenticated to true to ensure that login form is hidden
     // Login for is depricated in v.2
@@ -39,6 +40,12 @@ const App = {
     const message = ref();
     const isFetching = ref(false);
     const configOpen = ref(false);
+    const passwordChangeForm = reactive({
+      current_password: null,
+      new_password: null,
+      confirm_password: null,
+    });
+    const passwordMisMatch = ref(false);
     const roundsUrl = computed(() => {
       if (branch.value && url.value) {
         const url = `next-printable-round?branch_id=${branch?.value?.id}`;
@@ -99,6 +106,8 @@ const App = {
             text: "Authenticated successfully",
           });
           configOpen.value = true;
+          modalView.value = "LOGIN";
+          password.value = null;
         } else {
           toggleFlashMessage({
             type: "danger",
@@ -106,6 +115,23 @@ const App = {
           });
           configOpen.value = false;
           invalidPasword.value = true;
+        }
+      });
+
+      window.ipcRenderer.on("resetResponse", (event, response) => {
+        if (response === "password-changed") {
+          toggleFlashMessage({
+            type: "success",
+            text: "Password Changed Successfully",
+          });
+          configOpen.value = false;
+          modalView.value = "LOGIN";
+          authenticated.value = false;
+          passwordChangeForm.current_password = null;
+          passwordChangeForm.new_password = null;
+          passwordChangeForm.confirm_password = null;
+        } else {
+          passwordMisMatch.value = true;
         }
       });
 
@@ -187,7 +213,6 @@ const App = {
             if (activePrinters.value.length) {
               printers.forEach((_printer) => {
                 if (_printer.content) {
-                  
                   fetchInvoices({
                     content: JSON.parse(_printer.content).join(""),
                   });
@@ -240,7 +265,6 @@ const App = {
                     printer = invoicesPrinter.value;
                   }
                   if (printer) {
-                    const _content = JSON.parse(printer.content);
                     const data = {
                       printer: printer.name,
                       type: printer.type,
@@ -410,6 +434,15 @@ const App = {
       branch.value = {};
     }
 
+    function handlePasswordChange() {
+      passwordMisMatch.value = false;
+      window.ipcRenderer
+        .invoke("reset-action", { ...passwordChangeForm })
+        .then(() => {
+          //passwordMisMatch.value = false;
+        });
+    }
+
     return {
       isFetching,
       isAuthenticating,
@@ -452,6 +485,10 @@ const App = {
       isLoading,
       changeBranch,
       openConfigMode,
+      modalView,
+      passwordChangeForm,
+      handlePasswordChange,
+      passwordMisMatch,
     };
   },
 };

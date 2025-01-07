@@ -14,21 +14,21 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 50px;
-        height: 50px;
+        width: 20px;
+        height: 20px;
       }
       .printer-icon {
-        width: 40px;
-        height: 40px;
+        width: 20px;
+        height: 20px;
         color: #333;
       }
 
       .printing-indicator {
         position: absolute;
-        bottom: 10px;
-        right: 10px;
-        width: 10px;
-        height: 10px;
+        bottom: 5px;
+        right: 5px;
+        width: 5px;
+        height: 5px;
         background-color: green;
         border-radius: 50%;
         animation: vibrate 0.3s linear infinite;
@@ -165,73 +165,111 @@
       <div class="container-fluid" style="margin-top: 0.5rem">
         <div class="row mb-2">
           <template v-if="configOpen && authenticated">
-            <div class="col-5">
-              <div class="form-group">
-                <label>URL:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Eg: https://demo.tameaps.com/"
-                  v-model="url"
-                />
-              </div>
-            </div>
-            <div class="col-4">
-              <div
-                class="form-group"
-                v-if="!choosenBranchId && !branches.length"
-              >
-                <label style="visibility: hidden; width: 100%">Button</label>
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  @click="getBranches()"
-                  :disabled="!url"
-                >
-                  Get Branches {{ choosenBranchId }}
-                </button>
-              </div>
-              <div class="align-items-center" v-else-if="branches.length">
-                <div class="form-group">
-                  <label>Branch:</label>
-                  <select
-                    class="form-control form-select"
-                    v-model="choosenBranchId"
-                  >
-                    <option value="null" hidden disabled>Select Branch</option>
-                    <option
-                      :value="branch.id"
-                      v-for="branch in branches"
-                      :key="branch.id"
+            <div class="col-12 mb-2">
+              <div class="d-flex w-100 align-items-center">
+                <h4>Edit Settings</h4>
+                <div style="margin-left: auto">
+                  <div class="d-flex align-items-center">
+                    <button
+                      class="btn btn-primary"
+                      type="button"
+                      @click="modalView = 'CHANGE_PASSWORD'"
                     >
-                      {{ branch.name }}
-                    </option>
-                  </select>
+                      <span>Change Password</span>
+                    </button>
+                    <button
+                      class="btn btn-danger"
+                      type="button"
+                      style="margin-left: 5px"
+                      @click="()=>{
+                        configOpen=false; 
+                        authenticated=false; 
+                        password=null; 
+                        modalView='LOGIN'
+                      }"
+                    >
+                      <span>Logout</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div class="" v-else>
-                <label>Branch:</label>
-                <input
-                  type="text"
-                  :value="branch?.name"
-                  class="form-control"
-                  readonly
-                />
-                <a href="javascript:void(0)" @click.prevent="changeBranch"
-                  >Edit Branch</a
-                >
-              </div>
             </div>
-            <div class="col-3">
-              <label style="visibility: hidden; width: 100%">Button</label>
-              <button
-                type="button"
-                class="btn btn-primary w-100"
-                @click="updateSettings"
-                :disabled="!url || !choosenBranchId"
-              >
-                Save Settings
-              </button>
+            <hr style="margin: 1rem" />
+            <div class="col-12">
+              <div class="row">
+                <div class="col-5">
+                  <div class="form-group">
+                    <label>URL:</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Eg: https://demo.tameaps.com/"
+                      v-model="url"
+                    />
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div
+                    class="form-group"
+                    v-if="!choosenBranchId && !branches.length"
+                  >
+                    <label style="visibility: hidden; width: 100%"
+                      >Button</label
+                    >
+                    <button
+                      type="button"
+                      class="btn btn-primary"
+                      @click="getBranches()"
+                      :disabled="!url"
+                    >
+                      Get Branches {{ choosenBranchId }}
+                    </button>
+                  </div>
+                  <div class="align-items-center" v-else-if="branches.length">
+                    <div class="form-group">
+                      <label>Branch:</label>
+                      <select
+                        class="form-control form-select"
+                        v-model="choosenBranchId"
+                      >
+                        <option value="null" hidden disabled>
+                          Select Branch
+                        </option>
+                        <option
+                          :value="branch.id"
+                          v-for="branch in branches"
+                          :key="branch.id"
+                        >
+                          {{ branch.name }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="" v-else>
+                    <label>Branch:</label>
+                    <input
+                      type="text"
+                      :value="branch?.name"
+                      class="form-control"
+                      readonly
+                    />
+                    <a href="javascript:void(0)" @click.prevent="changeBranch"
+                      >Edit Branch</a
+                    >
+                  </div>
+                </div>
+                <div class="col-3">
+                  <label style="visibility: hidden; width: 100%">Button</label>
+                  <button
+                    type="button"
+                    class="btn btn-primary w-100"
+                    @click="updateSettings"
+                    :disabled="!url || !choosenBranchId"
+                  >
+                    Save Settings
+                  </button>
+                </div>
+              </div>
             </div>
           </template>
           <div class="col-12" v-else>
@@ -260,16 +298,7 @@
         <div class="row mb-2">
           <div class="col-12" v-if="displayMode === 'PRINTERS_VIEW'">
             <div class="w-100 d-flex align-items-center">
-              <h4 class="mb-0">Available Printers</h4>
-              <button
-                class="btn btn-success"
-                style="margin-left: auto"
-                type="button"
-                @click="showPrinterForm()"
-                v-if="activePrinters.length"
-              >
-                Add New
-              </button>
+              <h4 class="mb-2">Available Printers</h4>
             </div>
           </div>
           <div class="col-12 pt-3" v-if="displayMode !== 'PRINTERS_VIEW'">
@@ -412,128 +441,102 @@
               </div>
             </div>
           </div>
-          <div class="col-12 pt-3" style="text-align: center" v-else>
-            <div style="text-align: center" v-if="!activePrinters.length">
-              <h4>No Printers available</h4>
+          <div class="col-12 pb-1" style="text-align: center" v-else>
+            <div
+              style="text-align: center; display: flex; align-items: center"
+              v-if="!activePrinters.length"
+            >
+              <h4 style="margin-right: 10px">No Printers available</h4>
               <button
                 type="button"
                 class="btn btn-primary"
                 @click="showPrinterForm()"
+                style="padding: 0px 8px !important"
               >
                 Add Printers
               </button>
             </div>
-            <div
-              style="
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-                width: 100%;
-              "
-              v-else
-            >
-              <div
-                class="panel mb-2"
-                v-for="printer in activePrinters"
-                :key="printer.id"
-              >
-                <div class="printer-container" v-if="isFetching">
-                  <svg
-                    class="printer-icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path
-                      d="M19 7h-1V3H6v4H5C3.89 7 3 7.89 3 9v8h4v4h10v-4h4V9c0-1.11-.89-2-2-2zM8 4h8v3H8V4zm7 14H9v-4h6v4zm3-4h-1v-1H7v1H6v-5c0-.55.45-1 1-1h10c.55 0 1 .45 1 1v5z"
-                    />
-                  </svg>
-                  <div class="printing-indicator"></div>
-                </div>
-                <div
-                  style="
-                    display: flex;
-                    align-items: center;
-                    margin-bottom: 0.125rem;
-                  "
-                >
-                  <h4>Name: <small>{{ printer.name }}</small></h4>
-                </div>
-                <div
-                  style="
-                    display: flex;
-                    align-items: center;
-                    margin-bottom: 0.125rem;
-                  "
-                >
-                  <h4>Type: <small>{{ printer.type }}</small></h4>
-                </div>
-                <div
-                  style="
-                    display: flex;
-                    align-items: center;
-                    margin-bottom: 0.125rem;
-                  "
-                >
-                  <h4>
-                    Interface:
-                    <small>{{ printer.interface }}</small>
-                  </h4>
-                </div>
-                <div
-                  v-if="printer.ip"
-                  style="
-                    display: flex;
-                    align-items: center;
-                    margin-bottom: 0.125rem;
-                  "
-                >
-                  <h4>
-                    IP address:
-                    <small>{{ printer.ip }}</small>
-                  </h4>
-                </div>
-                <div
-                  v-else
-                  style="
-                    display: flex;
-                    align-items: center;
-                    margin-bottom: 0.125rem;
-                  "
-                >
-                  <h4>
-                    Share Name:
-                    <small>{{ printer.port }}</small>
-                  </h4>
-                </div>
-                <div
-                  style="
-                    display: flex;
-                    align-items: center;
-                    margin-bottom: 0.125rem;
-                  "
-                >
-                  <h4>
-                    Content:
-                    <small>{{ showPrinterContent(printer.content) }}</small>
-                  </h4>
-                </div>
-                <div class="d-flex mt-3">
-                  <button
-                    class="btn btn-primary"
-                    type="button"
-                    @click="showPrinterForm(printer)"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    class="btn btn-danger"
+            <div style="width: 100%" v-else>
+              <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                  <thead>
+                    <tr>
+                      <th>Status</th>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th>Interface</th>
+                      <th>Shared To</th>
+                      <th>Content</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="printer in activePrinters" :key="printer.id">
+                      <td>
+                        <div class="printer-container">
+                          <svg
+                            class="printer-icon"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                          >
+                            <path
+                              d="M19 7h-1V3H6v4H5C3.89 7 3 7.89 3 9v8h4v4h10v-4h4V9c0-1.11-.89-2-2-2zM8 4h8v3H8V4zm7 14H9v-4h6v4zm3-4h-1v-1H7v1H6v-5c0-.55.45-1 1-1h10c.55 0 1 .45 1 1v5z"
+                            />
+                          </svg>
+                          <div
+                            class="printing-indicator"
+                            v-if="isFetching"
+                          ></div>
+                        </div>
+                      </td>
+                      <td><span>{{ printer.name }}</span></td>
+                      <td><span>{{ printer.type }}</span></td>
+                      <td><span>{{ printer.interface }}</span></td>
+                      <td>
+                        <span v-if="printer.ip">{{ printer.ip }}</span>
+                        <span v-else>{{ printer.port }}</span>
+                      </td>
+                      <td>
+                        <span>{{ showPrinterContent(printer.content) }}</span>
+                      </td>
+                      <td class="text-center text-nowrap">
+                        <div
+                          class="d-flex align-items-center"
+                          v-if="configOpen && authenticated"
+                        >
+                          <button
+                            class="btn btn-primary"
+                            type="button"
+                            @click="showPrinterForm(printer)"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            class="btn btn-danger"
+                            style="margin-left: auto"
+                            type="button"
+                            @click="deletePrinter(printer)"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="d-flex mt-2">
+                <div class="w-100 d-flex align-items-center">
+                  <a
                     style="margin-left: auto"
-                    type="button"
-                    @click="deletePrinter(printer)"
+                    href="javascript:void(0)"
+                    @click.prevent="showPrinterForm()"
+                    v-if="activePrinters.length && configOpen && authenticated"
+                    style="padding: 0px 8px !important"
                   >
-                    Delete
-                  </button>
+                    Add New
+                  </a>
                 </div>
               </div>
             </div>
@@ -565,15 +568,111 @@
                     class="form-control mb-2"
                     v-model="password"
                   />
-                  <button
-                    type="button"
-                    :disabled="!password || isAuthenticating"
-                    class="btn btn-primary"
+                  <div
+                    class="d-flex align-items-center"
                     style="margin-top: 0.5rem; width: 100%"
-                    @click="handleLogin"
                   >
-                    Authenticate
-                  </button>
+                    <button
+                      type="button"
+                      :disabled="!password || isAuthenticating"
+                      class="btn btn-primary"
+                      @click="handleLogin"
+                    >
+                      Authenticate
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-danger"
+                      style="margin-left: auto"
+                      @click="configOpen=false;authenticated=false"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+      </template>
+
+      <!-- Change Password Modal-->
+
+      <template v-if="authenticated && configOpen && modalView !== 'LOGIN'">
+        <div
+          class="modal fade show"
+          id="login_modal"
+          role="dialog"
+          tabindex="-1"
+          aria-modal="true"
+          style="padding-right: 15px; display: block"
+        >
+          <div
+            class="modal-dialog modal-sm modal-dialog-centered"
+            role="document"
+          >
+            <div class="modal-content">
+              <div class="modal-body">
+                <form class="form-group" @submit.prevent="handlePasswordChange">
+                  <h4>Change Password</h4>
+                  <hr />
+                  <div class="row align-items-center mb-2">
+                    <label class="col-5" style="font-size: 0.675rem;">Current Password</label>
+                    <div class="col-7">
+                      <input
+                        type="password"
+                        class="form-control"
+                        v-model="passwordChangeForm.current_password"
+                      />
+                    </div>
+                  </div>
+                  <div class="row align-items-center mb-2">
+                    <label class="col-5" style="font-size: 0.675rem;">New Password</label>
+                    <div class="col-7">
+                      <input
+                        type="password"
+                        class="form-control"
+                        v-model="passwordChangeForm.new_password"
+                      />
+                    </div>
+                  </div>
+                  <div class="row align-items-center mb-2">
+                    <label class="col-5" style="font-size: 0.675rem;">Confirm Password</label>
+                    <div class="col-7">
+                      <input
+                        type="password"
+                        class="form-control"
+                        v-model="passwordChangeForm.confirm_password"
+                      />
+                    </div>
+                  </div>
+                  <div class="row" v-if="passwordMisMatch">
+                    <div class="col-12">
+                      <span class="text-danger">Invalid Current Password</span>
+                    </div>
+                  </div>
+                  <div
+                    class="d-flex align-items-center"
+                    style="margin-top: 0.5rem; width: 100%"
+                  >
+                    <button
+                      type="button"
+                      :disabled="!passwordChangeForm.confirm_password || !passwordChangeForm.new_password || !passwordChangeForm.current_password || (passwordChangeForm.confirm_password !== passwordChangeForm.new_password)"
+                      class="btn btn-primary"
+                      @click="handlePasswordChange"
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-danger"
+                      style="margin-left: auto"
+                      @click="configOpen=false;authenticated=false"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </form>
               </div>
             </div>
