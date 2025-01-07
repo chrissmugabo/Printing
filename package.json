@@ -1,6 +1,6 @@
 {
   "name": "printing-service",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "main": "main.js",
   "description": "Invoices and Orders printing configurations for different printers",
   "bin": "cli.js",
