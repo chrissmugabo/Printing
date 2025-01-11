@@ -298,27 +298,84 @@ ipcMain.handle("print-content", async (event, data) => {
 
     printer.drawLine();
     if (data?.round?.category === "INVOICE") {
-      printer.alignRight();
-      printer.setTextDoubleWidth();
-      printer.println(`Total: ${helper.formatMoney(data?.order?.grand_total)}`);
-      printer.setTextNormal();
-      printer.drawLine();
-      printer.alignCenter();
-      printer.print(`Dial `);
-      printer.bold(true);
-      //printer.print(`\x1B\x45\x01${data?.settings?.momo_code}\x1B\x45\x00`);
-      printer.setTextQuadArea();
-      printer.setTypeFontB();
-      printer.print(`${data?.settings?.momo_code}`);
-      printer.bold(false);
-      printer.setTextNormal();
-      printer.setTypeFontA();
-      printer.print(` to pay with MOMO`);
-      printer.newLine();
-      printer.println(
-        `This is not a legal receipt. Please ask your legal receipt.`
-      );
-      printer.println(`Thank you!`);
+      if (data?.order?.ebm_meta) {
+        const createRow = (columns, columnWidths) => {
+          let row = "|";
+          for (let i = 0; i < columns.length; i++) {
+            row += ` ${columns[i].padEnd(columnWidths[i])} |`;
+          }
+          return row;
+        };
+
+        const columnWidths = [21, 27];
+        const totals = [
+          ["Total Rwf", `${data?.order?.grand_total}`],
+          ["Total A-EX Rwf", `0.00`],
+          ["Total B-18% Rwf", `${data?.order?.total_taxes}`],
+          ["Total D", `0.00`],
+          ["Total Tax Rwf", `${data?.order?.total_taxes}`],
+        ];
+
+        printer.println(
+          "+" + columnWidths.map((w) => "-".repeat(w + 2)).join("+") + "+"
+        );
+        for (let i = 1; i < totals.length; i++) {
+          printer.println(createRow(totals[i], columnWidths));
+        }
+        printer.println(
+          "+" + columnWidths.map((w) => "-".repeat(w + 2)).join("+") + "+"
+        );
+
+        printer.drawLine();
+        const invoiceMeta = data?.order?.ebm_meta;
+        printer.newLine();
+        printer.bold(true);
+        printer.print("SDC INFORMATION");
+        printer.bold(false);
+        printer.setTextNormal();
+        printer.drawLine();
+        printer.println(
+          `Date: ${helper.formateEbmDate(invoiceMeta.vsdcRcptPbctDate)}`
+        );
+        printer.println(`SDC ID: ${invoiceMeta.sdcId}`);
+        printer.println(`Internal Data: ${invoiceMeta.intrlData}`);
+        printer.println(`Receipt Signature: ${invoiceMeta.rcptSign}`);
+        printer.println(`MRC: ${invoiceMeta.mrcNo}`);
+        printer.newLine();
+        printer.alignCenter();
+        printer.printQR(
+          `https://myrra.rra.gov.rw/common/link/ebm/receipt/indexEbmReceiptData?Data=${invoiceMeta.rcptSign}`,
+          {
+            cellSize: 6,
+            correction: "H",
+          }
+        );
+        printer.println(`Powered by EBM v2`);
+      } else {
+        printer.alignRight();
+        printer.setTextDoubleWidth();
+        printer.println(
+          `Total: ${helper.formatMoney(data?.order?.grand_total)}`
+        );
+        printer.setTextNormal();
+        printer.drawLine();
+        printer.alignCenter();
+        printer.print(`Dial `);
+        printer.bold(true);
+        //printer.print(`\x1B\x45\x01${data?.settings?.momo_code}\x1B\x45\x00`);
+        printer.setTextQuadArea();
+        printer.setTypeFontB();
+        printer.print(`${data?.settings?.momo_code}`);
+        printer.bold(false);
+        printer.setTextNormal();
+        printer.setTypeFontA();
+        printer.print(` to pay with MOMO`);
+        printer.newLine();
+        printer.println(
+          `This is not a legal receipt. Please ask your legal receipt.`
+        );
+        printer.println(`Thank you!`);
+      }
     } else if (data?.round?.category === "ROUND_SLIP") {
       const total = data?.items?.reduce((a, b) => a + Number(b.amount), 0);
       printer.alignRight();
