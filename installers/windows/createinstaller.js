@@ -1,5 +1,6 @@
 const createWindowsInstaller =
   require("electron-winstaller").createWindowsInstaller;
+const { version } = require("os");
 const path = require("path");
 
 getInstallerConfig()
@@ -26,5 +27,6 @@ function getInstallerConfig() {
     skipUpdateIcon: true,
     createDesktopShortcut: true, 
     createStartMenuShortcut: true,
+    version:'1.4.0'
   });
 }
