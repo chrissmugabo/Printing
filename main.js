@@ -210,8 +210,7 @@ ipcMain.handle("print-content", async (event, data) => {
     options.interface = `//localhost/${data.port}`;
   }
   const printer = new ThermalPrinter(options);
-  const increaseMomoSize = (text) => {};
-  const orderDate = `${data?.order?.system_date} ${data?.order?.order_time}`;
+ 
   try {
     await printer.isPrinterConnected();
     printer.alignCenter();
@@ -256,11 +255,11 @@ ipcMain.handle("print-content", async (event, data) => {
 
     printer.tableCustom([
       {
-        text: `Date: ${helper.formatDate(orderDate)}`,
+        text: `Date: ${helper.formatDate(data?.order?.system_date)}`,
         align: "LEFT",
       },
       {
-        text: `Time: ${helper.formatTime(orderDate)}`,
+        text: `Time: ${helper.formatTime(data?.order?.order_time)}`,
         align: "RIGHT",
       },
     ]);
@@ -297,17 +296,9 @@ ipcMain.handle("print-content", async (event, data) => {
     });
 
     printer.drawLine();
+
     if (data?.round?.category === "INVOICE") {
       if (data?.order?.ebm_meta) {
-        const createRow = (columns, columnWidths) => {
-          let row = "|";
-          for (let i = 0; i < columns.length; i++) {
-            row += ` ${columns[i].padEnd(columnWidths[i])} |`;
-          }
-          return row;
-        };
-
-        const columnWidths = [21, 27];
         const totals = [
           ["Total Rwf", `${data?.order?.grand_total}`],
           ["Total A-EX Rwf", `0.00`],
@@ -316,15 +307,12 @@ ipcMain.handle("print-content", async (event, data) => {
           ["Total Tax Rwf", `${data?.order?.total_taxes}`],
         ];
 
-        printer.println(
-          "+" + columnWidths.map((w) => "-".repeat(w + 2)).join("+") + "+"
-        );
-        for (let i = 1; i < totals.length; i++) {
-          printer.println(createRow(totals[i], columnWidths));
-        }
-        printer.println(
-          "+" + columnWidths.map((w) => "-".repeat(w + 2)).join("+") + "+"
-        );
+        totals.forEach((item) => {
+          printer.tableCustom([
+            { text: item[0], align: "LEFT" },
+            { text: item[1], align: "RIGHT" },
+          ]);
+        });
 
         printer.drawLine();
         const invoiceMeta = data?.order?.ebm_meta;
@@ -332,6 +320,7 @@ ipcMain.handle("print-content", async (event, data) => {
         printer.bold(true);
         printer.print("SDC INFORMATION");
         printer.bold(false);
+        printer.newLine();
         printer.setTextNormal();
         printer.drawLine();
         printer.println(
@@ -346,8 +335,8 @@ ipcMain.handle("print-content", async (event, data) => {
         printer.printQR(
           `https://myrra.rra.gov.rw/common/link/ebm/receipt/indexEbmReceiptData?Data=${invoiceMeta.rcptSign}`,
           {
-            cellSize: 6,
-            correction: "H",
+            cellSize: 3,
+            correction: "Q",
           }
         );
         printer.println(`Powered by EBM v2`);

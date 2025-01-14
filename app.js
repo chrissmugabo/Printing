@@ -209,7 +209,6 @@ const App = {
           };
           axios.get(settings.base_url + "/api/preloaders").then((response) => {
             appSettings.value = response?.data;
-
             if (activePrinters.value.length) {
               printers.forEach((_printer) => {
                 if (_printer.content) {
